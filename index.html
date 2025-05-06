@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#6366f1">
+  <meta name="theme-color" content="#A0A083">
   <meta name="description" content="Aplikasi Jadwal Pemakalah Akademik - PWA">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -23,64 +23,68 @@
 <body>
   <div class="container">
     <!-- Header Section -->
-    <header class="hero">
-      <img src="https://cdn-icons-png.flaticon.com/512/2232/2232688.png" 
-           class="illustration" 
-           alt=""
-           aria-hidden="true">
-      
+    <header class="hero">      
       <h1 class="title">Jadwal Pemakalah</h1>
 
-      <!-- Google Drive Access -->
-      <div class="drive-dropdown-container">
-        <label for="driveDropdown" id="driveLabel">
-          <span aria-hidden="true">📁</span>
-          <span class="sr-only">Akses Folder</span> Google Drive:
-        </label>
-        <select id="driveDropdown" 
-                class="drive-dropdown"
-                aria-label="Pilih kelas untuk mengakses Google Drive">
-          <option value="">-- Pilih Kelas --</option>
-          <option value="https://drive.google.com/drive/folders/12_mT3WcsuFeYOYfvuQnKjFH1B1dVgNyZ?usp=drive_link">
-            PKU B
-          </option>
-          <option value="https://drive.google.com/drive/folders/1La24Y-0DOPq5iJUUVg-UaF8gWEIsIqHQ?usp=drive_link">
-            PTIQ H
-          </option>
-          <option value="https://drive.google.com/drive/folders/1i83aR0pZj_lCFMaW6gSHAbXinvaQ3gFL?usp=drive_link">
-            PKUP
-          </option>
-        </select>
-      </div>
-
-      <!-- Control Panel -->
-      <div class="controls">
-        <!-- Class Selector -->
-        <div class="select-wrapper">
-          <label for="class-select" class="sr-only">Pilih Kelas</label>
-          <i class="fa-solid fa-graduation-cap" aria-hidden="true"></i>
-          <select id="class-select" aria-label="Pilih kelas">
-            <option value="all">Semua Kelas</option>
-            <option value="PTIQ">Kelas PTIQ H</option>
-            <option value="PKU B">Kelas PKU B</option>
-            <option value="PKUP">Kelas PKUP</option>
-          </select>
+      <!-- Interactive Icon Bar for Controls -->
+      <div class="interactive-icon-bar">
+        <!-- Google Drive Icon Control -->
+        <div class="icon-control-wrapper" id="google-drive-control">
+          <button class="icon-trigger-btn" aria-label="Akses Google Drive" aria-expanded="false" aria-controls="driveDropdownContent">
+            <i class="fab fa-google-drive" aria-hidden="true"></i>
+          </button>
+          <div class="dropdown-panel" id="driveDropdownContent">
+            <select id="driveDropdown" aria-label="Pilih kelas untuk mengakses Google Drive">
+              <option value="">-- Pilih Kelas Drive --</option>
+              <option value="https://drive.google.com/drive/folders/12_mT3WcsuFeYOYfvuQnKjFH1B1dVgNyZ?usp=drive_link">
+                PKU B
+              </option>
+              <option value="https://drive.google.com/drive/folders/1La24Y-0DOPq5iJUUVg-UaF8gWEIsIqHQ?usp=drive_link">
+                PTIQ H
+              </option>
+              <option value="https://drive.google.com/drive/folders/1i83aR0pZj_lCFMaW6gSHAbXinvaQ3gFL?usp=drive_link">
+                PKUP
+              </option>
+            </select>
+          </div>
         </div>
 
-        <div class="selector-container">
-          <!-- Subject Selector -->
-          <div class="select-wrapper">
-            <label for="subject-select" class="sr-only">Pilih Mata Kuliah</label>
+        <!-- Class Selector -->
+        <div class="icon-control-wrapper" id="class-filter-control">
+          <button class="icon-trigger-btn" aria-label="Pilih Kelas" aria-expanded="false" aria-controls="classSelectContent">
+            <i class="fa-solid fa-graduation-cap" aria-hidden="true"></i>
+          </button>
+          <div class="dropdown-panel" id="classSelectContent">
+            <label for="class-select" class="sr-only">Pilih Kelas</label>
+            <select id="class-select" aria-label="Pilih kelas">
+              <option value="all">Semua Kelas</option>
+              <option value="PTIQ">Kelas PTIQ H</option>
+              <option value="PKU B">Kelas PKU B</option>
+              <option value="PKUP">Kelas PKUP</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Subject Selector Icon Control -->
+        <div class="icon-control-wrapper" id="subject-filter-control">
+          <button class="icon-trigger-btn" aria-label="Pilih Mata Kuliah" aria-expanded="false" aria-controls="subjectSelectContent">
             <i class="fa-solid fa-book" aria-hidden="true"></i>
+          </button>
+          <div class="dropdown-panel" id="subjectSelectContent">
+            <label for="subject-select" class="sr-only">Pilih Mata Kuliah</label>
             <select id="subject-select" aria-label="Pilih mata kuliah">
               <option value="">Semua Mata Kuliah</option>
             </select>
           </div>
+        </div>
 
-          <!-- Name Search -->
-          <div class="select-wrapper">
-            <label for="search-name" class="sr-only">Cari Nama</label>
+        <!-- Name Search Icon Control -->
+        <div class="icon-control-wrapper" id="name-search-control">
+          <button class="icon-trigger-btn" aria-label="Cari Nama" aria-expanded="false" aria-controls="searchNameInputWrapper">
             <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+          </button>
+          <div class="input-panel" id="searchNameInputWrapper">
+            <label for="search-name" class="sr-only">Cari Nama</label>
             <input type="text" 
                    id="search-name" 
                    placeholder="Cari nama..."
@@ -88,7 +92,7 @@
           </div>
         </div>
       </div>
-
+      
       <!-- Calendar Container -->
       <div id="calendar"></div>
     </header>
