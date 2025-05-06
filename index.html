@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="id" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#6366f1">
+  <meta name="description" content="Aplikasi Jadwal Pemakalah Akademik - PWA">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-startup-image" href="/splashscreens/iphone-splash.png">
+  <title>Jadwal Pemakalah | Academic Planner</title>
+  
+  <!-- PWA Metadata -->
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/icons/icon-192.png">
+  
+  <!-- External Resources -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <div class="container">
+    <!-- Header Section -->
+    <header class="hero">
+      <img src="https://cdn-icons-png.flaticon.com/512/2232/2232688.png" 
+           class="illustration" 
+           alt=""
+           aria-hidden="true">
+      
+      <h1 class="title">Jadwal Pemakalah</h1>
+
+      <!-- Google Drive Access -->
+      <div class="drive-dropdown-container">
+        <label for="driveDropdown" id="driveLabel">
+          <span aria-hidden="true">📁</span>
+          <span class="sr-only">Akses Folder</span> Google Drive:
+        </label>
+        <select id="driveDropdown" 
+                class="drive-dropdown"
+                aria-label="Pilih kelas untuk mengakses Google Drive">
+          <option value="">-- Pilih Kelas --</option>
+          <option value="https://drive.google.com/drive/folders/12_mT3WcsuFeYOYfvuQnKjFH1B1dVgNyZ?usp=drive_link">
+            PKU B
+          </option>
+          <option value="https://drive.google.com/drive/folders/1La24Y-0DOPq5iJUUVg-UaF8gWEIsIqHQ?usp=drive_link">
+            PTIQ H
+          </option>
+          <option value="https://drive.google.com/drive/folders/1i83aR0pZj_lCFMaW6gSHAbXinvaQ3gFL?usp=drive_link">
+            PKUP
+          </option>
+        </select>
+      </div>
+
+      <!-- Control Panel -->
+      <div class="controls">
+        <!-- Class Selector -->
+        <div class="select-wrapper">
+          <label for="class-select" class="sr-only">Pilih Kelas</label>
+          <i class="fa-solid fa-graduation-cap" aria-hidden="true"></i>
+          <select id="class-select" aria-label="Pilih kelas">
+            <option value="all">Semua Kelas</option>
+            <option value="PTIQ">Kelas PTIQ H</option>
+            <option value="PKU B">Kelas PKU B</option>
+            <option value="PKUP">Kelas PKUP</option>
+          </select>
+        </div>
+
+        <div class="selector-container">
+          <!-- Subject Selector -->
+          <div class="select-wrapper">
+            <label for="subject-select" class="sr-only">Pilih Mata Kuliah</label>
+            <i class="fa-solid fa-book" aria-hidden="true"></i>
+            <select id="subject-select" aria-label="Pilih mata kuliah">
+              <option value="">Semua Mata Kuliah</option>
+            </select>
+          </div>
+
+          <!-- Name Search -->
+          <div class="select-wrapper">
+            <label for="search-name" class="sr-only">Cari Nama</label>
+            <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+            <input type="text" 
+                   id="search-name" 
+                   placeholder="Cari nama..."
+                   aria-label="Input pencarian nama">
+          </div>
+        </div>
+      </div>
+
+      <!-- Calendar Container -->
+      <div id="calendar"></div>
+    </header>
+
+    <!-- Results Section -->
+    <main class="results" id="results" role="region" aria-live="polite">
+      <!-- Results will be dynamically inserted here -->
+    </main>
+
+    <!-- Event Detail Popup -->
+    <div id="overlay" class="overlay" role="dialog" aria-modal="true" onclick="uiController.closePopup()"></div>
+    <div id="popup" class="popup" role="alertdialog" aria-labelledby="popupTitle">
+      <h2 id="popupTitle" class="sr-only">Detail Jadwal</h2>
+      <button class="close-btn" 
+              onclick="uiController.closePopup()" 
+              aria-label="Tutup popup">
+        &times;
+      </button>
+      <div id="popup-content" tabindex="-1"></div>
+    </div>
+  </div>
+
+  <!-- PWA Install Prompt -->
+  <div id="add-to-home-popup" class="add-to-home-popup" role="dialog" aria-modal="true">
+    <div class="add-to-home-content">
+      <button id="closePwaInstallPromptBtn" 
+              class="close-btn" 
+              aria-label="Tutup popup instalasi">
+        &times;
+      </button>
+      <p id="pwa-install-text">Tambahkan situs ini ke layar utama untuk akses cepat.</p>
+      <button id="add-to-home" 
+              class="add-btn" 
+              aria-label="Tambahkan ke layar utama">
+        Tambahkan ke Layar Utama
+      </button>
+    </div>
+  </div>
+
+  <!-- External Dependencies -->
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
