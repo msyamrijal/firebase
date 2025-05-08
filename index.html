@@ -24,11 +24,9 @@
 <body>
   <div class="container">
     <!-- Header Section -->
-    <header class="hero">      
-      <h1 class="title">Jadwal Pemakalah</h1>
-
+    <div id="stack-header">
+      <!-- Interactive Icon Bar for Controls -->
       <!-- Stack Header for All Controls -->
-      <div id="stack-header">
         <!-- Interactive Icon Bar for Controls -->
         <div class="interactive-icon-bar">
           <!-- Google Drive Icon Control -->
@@ -102,11 +100,14 @@
           <button id="show-calendar-btn" class="view-toggle-btn" aria-pressed="false">Kalender</button>
         </div>
       </div>
-
-      <!-- Calendar Container -->
-      <div id="calendar"></div>
+    
+    <header class="hero">      
+      <h1 class="title">Jadwal Pemakalah</h1>
     </header>
 
+    <!-- Calendar Container -->
+    <!-- Konten ini akan muncul di bawah hero (judul) dan stack-header -->
+    <div id="calendar"></div>
     <!-- Results Section -->
     <main class="results" id="results" role="region" aria-live="polite">
       <!-- Results will be dynamically inserted here -->
