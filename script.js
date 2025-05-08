@@ -134,8 +134,8 @@ const calendarManager = {
     if (!firestoreDocs || firestoreDocs.length === 0) return [];
 
     let relevantDocs = firestoreDocs;
-     // Jika ada pengguna yang login, filter dokumen untuk kalender
-     if (currentUser && currentUser.email) {
+    // Jika ada pengguna yang login, filter dokumen untuk kalender
+    if (currentUser && currentUser.email) {
       relevantDocs = firestoreDocs.filter(doc => {
         const data = doc.data();
         return data.peserta && data.peserta.some(p => p.toLowerCase().includes(currentUser.email.toLowerCase()));
@@ -145,7 +145,6 @@ const calendarManager = {
       const data = doc.data();
       return {
         title: `${data.peserta.slice(0, 2).join(', ')}${data.peserta.length > 2 ? ', ...' : ''}`,
-    
         date: data.date, // Pastikan formatnya YYYY-MM-DD
         extendedProps: {
           detail: `<strong>Kelas:</strong> ${data.className}<br><strong>Mata Kuliah:</strong> ${data.subject}<br><strong>Waktu:</strong> ${data.time || 'N/A'}<br><strong>Peserta:</strong> ${data.peserta.join(', ')}<br><strong>Materi:</strong> ${data.materi || 'Belum ada materi'}`
@@ -153,25 +152,9 @@ const calendarManager = {
       };
     });
   }
-  // rerenderEvents dan penutup object calendarManager akan ada di bawah setelah perbaikan
-  // ... (kode _getFilteredDataFromLocalStructure dan dataManager tetap sama) ...
 }; // Penutup untuk calendarManager yang benar
 
 // Data Manager
-// ... (kode dataManager tetap sama seperti yang Anda berikan, yang sudah terlihat baik) ...
-
-// Icon Toggle Manager
-// ... (kode iconToggleManager tetap sama) ...
-
-// UI Controller
-// ... (kode uiController tetap sama) ...
-
-// Auth Manager
-// ... (kode authManager tetap sama) ...
-
-// Initialize Application
-// ... (kode inisialisasi tetap sama) ...
-
 // Pastikan rerenderEvents ada di dalam calendarManager
 calendarManager.rerenderEvents = (newFirestoreDocs) => {
   if (calendarManager.calendarInstance) {
@@ -749,4 +732,3 @@ const authManager = {
 // Initialize Application
 document.addEventListener('DOMContentLoaded', uiController.init); // Inisialisasi UI dan listener dasar
 onAuthStateChanged(auth, authManager.handleAuthStateChange); // Listener status autentikasi global
-
