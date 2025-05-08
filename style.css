@@ -167,6 +167,42 @@ button:focus-visible {
   animation: fadeInPanel 0.2s ease-out;
 }
 
+/* View Toggle Buttons */
+.view-toggle-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem; /* Increased gap for better separation */
+  margin-bottom: 1.5rem; /* Space before calendar/results */
+  margin-top: 1rem; /* Space after icon bar */
+}
+
+.view-toggle-btn {
+  padding: 0.6rem 1.2rem;
+  border: 1px solid var(--secondary);
+  background-color: var(--card-bg);
+  color: var(--primary);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: var(--transition);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.view-toggle-btn:hover,
+.view-toggle-btn:focus-visible {
+  background-color: var(--secondary);
+  color: var(--accent);
+  outline: 2px solid var(--accent); /* Added focus style */
+  outline-offset: 2px;
+}
+
+.view-toggle-btn.active {
+  background-color: var(--primary);
+  color: var(--card-bg);
+  border-color: var(--primary);
+  box-shadow: 0 2px 4px rgba(74, 64, 58, 0.1); /* Adjusted shadow color */
+}
+
 /* Calendar */
 #calendar {
   margin-top: 1rem;

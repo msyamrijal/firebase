@@ -45,7 +45,11 @@ const elements = {
     content: document.getElementById('popup-content'),
     container: document.getElementById('popup')
   },
-  pwaPopup: document.getElementById('add-to-home-popup')
+  pwaPopup: document.getElementById('add-to-home-popup'),
+  viewToggleButtons: { // Tambahkan elemen tombol view
+    calendar: document.getElementById('show-calendar-btn'),
+    datacard: document.getElementById('show-datacard-btn')
+  }
 };
 
 // Utility Functions
@@ -280,6 +284,7 @@ const iconToggleManager = {
 // UI Controller
 const uiController = {
   deferredPrompt: null, // Untuk menyimpan event beforeinstallprompt
+  currentViewMode: 'datacard', // Default ke tampilan datacard
   init: async () => {
     // Tampilkan spinner loading awal
     const initialSpinner = document.createElement('div');
@@ -344,6 +349,10 @@ const uiController = {
     // Listener untuk tombol tutup PWA Install Prompt
     const closePwaInstallBtn = document.getElementById('closePwaInstallPromptBtn');
     if (closePwaInstallBtn) {
+      // Pastikan elemen pwaPopup ada sebelum menambahkan event listener
+      if (!elements.pwaPopup) {
+        elements.pwaPopup = document.getElementById('add-to-home-popup');
+      }
       closePwaInstallBtn.addEventListener('click', () => {
         if (elements.pwaPopup) elements.pwaPopup.style.display = 'none';
       });
@@ -351,6 +360,10 @@ const uiController = {
 
     document.getElementById('add-to-home').addEventListener('click', uiController.handlePWAInstall);
     // Load Saved Preferences
+    // Tambahkan event listener untuk tombol view toggle
+    elements.viewToggleButtons.calendar.addEventListener('click', () => uiController.setView('calendar'));
+    elements.viewToggleButtons.datacard.addEventListener('click', () => uiController.setView('datacard'));
+
     const savedClass = localStorage.getItem('selectedClass');
     if(savedClass) elements.classSelect.value = savedClass;    
 
@@ -359,18 +372,49 @@ const uiController = {
   processInitialData: (schedulesDocs) => {
     console.log("Memproses data awal. Jumlah dokumen diterima:", schedulesDocs.length);
     // Initialize Calendar
-    calendarManager.init(schedulesDocs);
+    calendarManager.init(schedulesDocs); // Inisialisasi data kalender
     if (!calendarManager.calendarInstance) {
         console.error("Calendar instance GAGAL diinisialisasi di processInitialData.");
         return;
     }
-    if(calendarManager.calendarInstance) calendarManager.calendarInstance.render();
+    // Jangan render kalender di sini jika defaultnya adalah datacard. setView akan menanganinya.
+
     uiController.updateSubjects();
-    uiController.handleSearch(); // Lakukan pencarian awal
+
+    // Atur tampilan awal berdasarkan currentViewMode
+    // Ini juga akan memicu handleSearch jika tampilan awalnya adalah 'datacard'
+    uiController.setView(uiController.currentViewMode);
 
     // Initialize PWA & Icon Toggles after data is processed and UI is ready
     uiController.initPWA();
     iconToggleManager.init();
+  },
+
+  setView: (view) => {
+    uiController.currentViewMode = view;
+
+    if (view === 'calendar') {
+      elements.calendarEl.style.display = '';
+      if(elements.printContainer) elements.printContainer.style.display = ''; // Tampilkan tombol print dengan kalender
+      elements.resultsDiv.style.display = 'none';
+      elements.viewToggleButtons.calendar.classList.add('active');
+      elements.viewToggleButtons.calendar.setAttribute('aria-pressed', 'true');
+      elements.viewToggleButtons.datacard.classList.remove('active');
+      elements.viewToggleButtons.datacard.setAttribute('aria-pressed', 'false');
+      if (calendarManager.calendarInstance) {
+        calendarManager.calendarInstance.render(); // Render kalender saat ditampilkan
+      }
+    } else { // 'datacard'
+      elements.calendarEl.style.display = 'none';
+      if(elements.printContainer) elements.printContainer.style.display = 'none'; // Sembunyikan tombol print dengan datacard
+      elements.resultsDiv.style.display = ''; // Atau 'grid' jika itu defaultnya
+      elements.viewToggleButtons.datacard.classList.add('active');
+      elements.viewToggleButtons.datacard.setAttribute('aria-pressed', 'true');
+      elements.viewToggleButtons.calendar.classList.remove('active');
+      elements.viewToggleButtons.calendar.setAttribute('aria-pressed', 'false');
+      // Panggil handleSearch untuk mengisi datacards saat beralih ke tampilan ini
+      uiController.handleSearch();
+    }
   },
 
   handleClassChange: () => {
@@ -406,31 +450,40 @@ const uiController = {
   handleSearch: () => {
     console.log("handleSearch dipanggil.");
     const query = elements.nameInput.value.trim().toLowerCase();
-    const showCalendar = !query;
-    
-    // Toggle UI Elements
-    elements.calendarEl.style.display = showCalendar ? '' : 'none';
-    if(elements.printContainer) elements.printContainer.style.display = showCalendar ? '' : 'none';
-    
-    // Show Loading
-    const spinner = document.createElement('div');
-    spinner.className = 'loading-spinner';
-    elements.resultsDiv.innerHTML = '';
-    elements.resultsDiv.appendChild(spinner);
 
-    console.log("handleSearch - allSchedulesFromFirestore sebelum filter:", allSchedulesFromFirestore);
-    // Process Data
-    const filteredData = dataManager.getFilteredDataFromFirestore(
-      allSchedulesFromFirestore,
-      elements.classSelect.value,
-      elements.subjectSelect.value,
-      query
-    );
-    // Render Results
-    setTimeout(() => {
-      spinner.remove();
-      dataManager.renderResults(filteredData, query);
-    }, 300);
+    // Jika ada query dan tampilan saat ini adalah kalender, alihkan ke tampilan datacard
+    if (query && uiController.currentViewMode === 'calendar') {
+      uiController.setView('datacard'); // Ini akan menyembunyikan kalender dan menampilkan resultsDiv
+                                       // setView('datacard') juga akan memanggil handleSearch lagi
+      return; // Keluar karena setView('datacard') akan memanggil handleSearch
+    }
+
+    // Hanya lanjutkan untuk memperbarui resultsDiv jika tampilan saat ini adalah 'datacard'
+    if (uiController.currentViewMode === 'datacard') {
+      // Show Loading
+      const spinner = document.createElement('div');
+      spinner.className = 'loading-spinner';
+      spinner.style.display = 'block'; // Pastikan spinner terlihat
+      elements.resultsDiv.innerHTML = ''; // Bersihkan hasil sebelumnya
+      elements.resultsDiv.appendChild(spinner);
+
+      console.log("handleSearch (mode datacard) - allSchedulesFromFirestore sebelum filter:", allSchedulesFromFirestore);
+      // Process Data
+      const filteredData = dataManager.getFilteredDataFromFirestore(
+        allSchedulesFromFirestore,
+        elements.classSelect.value,
+        elements.subjectSelect.value,
+        query
+      );
+      // Render Results
+      setTimeout(() => {
+        if (spinner.parentNode) { // Pastikan spinner masih ada sebelum dihapus
+          spinner.remove();
+        }
+        dataManager.renderResults(filteredData, query);
+      }, 300);
+    }
+    // Jika mode kalender dan tidak ada query, tidak perlu melakukan apa-apa pada resultsDiv
   },
 
   handleDriveSelect: function(event) {
