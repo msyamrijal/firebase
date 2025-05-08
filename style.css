@@ -198,7 +198,7 @@ button:focus-visible {
   background-position: right 0.5rem center;
   background-size: 1em 1em;
   line-height: normal;
-  min-width: 100px;
+  width: 150px; /* Atur lebar default yang seragam */
 }
 
 .select-as-button:hover,
@@ -228,6 +228,7 @@ button:focus-visible {
   font-size: 0.8rem;
   font-weight: 500;
   white-space: nowrap;
+  width: 150px; /* Atur lebar default yang seragam */
 }
 .control-trigger-btn:hover,
 .control-trigger-btn:focus {
@@ -272,6 +273,7 @@ button:focus-visible {
   font-size: 0.8rem;
   font-weight: 500;
   white-space: nowrap;
+  width: 150px; /* Atur lebar default yang seragam */
 }
 
 .view-toggle-btn:hover,
@@ -543,6 +545,12 @@ button:focus-visible {
     gap: 0.75rem;
     width: 100%;
     padding-top: 1rem; /* Jarak dari tombol close */
+  }
+  /* Pastikan semua tombol/select di panel mobile mengambil lebar penuh */
+  .mobile-menu-panel .select-as-button,
+  .mobile-menu-panel .control-trigger-btn,
+  .mobile-menu-panel .view-toggle-btn {
+    width: 100%;
   }
 }
 
