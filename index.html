@@ -25,14 +25,14 @@
   <div class="container">
     <!-- Header Section -->
     <div id="stack-header">
-      <!-- Interactive Icon Bar for Controls -->
-      <!-- Stack Header for All Controls -->
+      <h1 id="header-app-title">PKUMI.06</h1>
+      <div class="header-controls-wrapper">
         <!-- Interactive Icon Bar for Controls -->
         <div class="interactive-icon-bar">
           <!-- Google Drive Icon Control -->
           <div class="icon-control-wrapper" id="google-drive-control">
-            <button class="icon-trigger-btn" aria-label="Akses Google Drive" aria-expanded="false" aria-controls="driveDropdownContent">
-              <i class="fab fa-google-drive" aria-hidden="true"></i>
+            <button class="control-trigger-btn" aria-label="Akses Google Drive" aria-expanded="false" aria-controls="driveDropdownContent">
+              Drive
             </button>
             <div class="dropdown-panel" id="driveDropdownContent">
               <select id="driveDropdown" aria-label="Pilih kelas untuk mengakses Google Drive">
@@ -52,8 +52,8 @@
 
           <!-- Class Selector -->
           <div class="icon-control-wrapper" id="class-filter-control">
-            <button class="icon-trigger-btn" aria-label="Pilih Kelas" aria-expanded="false" aria-controls="classSelectContent">
-              <i class="fa-solid fa-graduation-cap" aria-hidden="true"></i>
+            <button class="control-trigger-btn" aria-label="Pilih Kelas" aria-expanded="false" aria-controls="classSelectContent">
+              Kelas
             </button>
             <div class="dropdown-panel" id="classSelectContent">
               <label for="class-select" class="sr-only">Pilih Kelas</label>
@@ -68,8 +68,8 @@
 
           <!-- Subject Selector Icon Control -->
           <div class="icon-control-wrapper" id="subject-filter-control">
-            <button class="icon-trigger-btn" aria-label="Pilih Mata Kuliah" aria-expanded="false" aria-controls="subjectSelectContent">
-              <i class="fa-solid fa-book" aria-hidden="true"></i>
+            <button class="control-trigger-btn" aria-label="Pilih Mata Kuliah" aria-expanded="false" aria-controls="subjectSelectContent">
+              Matkul
             </button>
             <div class="dropdown-panel" id="subjectSelectContent">
               <label for="subject-select" class="sr-only">Pilih Mata Kuliah</label>
@@ -81,8 +81,8 @@
 
           <!-- Name Search Icon Control -->
           <div class="icon-control-wrapper" id="name-search-control">
-            <button class="icon-trigger-btn" aria-label="Cari Nama" aria-expanded="false" aria-controls="searchNameInputWrapper">
-              <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+            <button class="control-trigger-btn" aria-label="Cari Nama" aria-expanded="false" aria-controls="searchNameInputWrapper">
+              Cari
             </button>
             <div class="input-panel" id="searchNameInputWrapper">
               <label for="search-name" class="sr-only">Cari Nama</label>
@@ -100,9 +100,12 @@
           <button id="show-calendar-btn" class="view-toggle-btn" aria-pressed="false">Kalender</button>
         </div>
       </div>
+    </div>
     
     <header class="hero">      
-      <h1 class="title">Jadwal Pemakalah</h1>
+      <!-- Judul utama aplikasi sekarang ada di stack-header, 
+           elemen h1.title di sini bisa dihapus atau dikosongkan jika .hero masih diperlukan untuk spacing -->
+      <!-- <h1 class="title">Jadwal Pemakalah</h1> -->
     </header>
 
     <!-- Calendar Container -->

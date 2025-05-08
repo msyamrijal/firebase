@@ -62,7 +62,7 @@ body {
 /* Hero Section */
 .hero {
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 0; /* Dihapus karena stack-header akan memberi margin bawah */
   animation: fadeIn 0.8s ease both;
 }
 
@@ -71,7 +71,7 @@ body {
   font-weight: 700;
   background: var(--gradient);
   -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  /* -webkit-text-fill-color: transparent; Dihapus untuk judul header baru */
   margin-bottom: 1.5rem;
 }
 
@@ -86,17 +86,32 @@ body {
   margin-bottom: 1.5rem; /* Space to content below when not sticky or at initial load */
   display: flex;
   align-items: center;
-  justify-content: space-between; /* Distribute space between icon bar and view toggles */
+  /* justify-content: space-between; Diatur oleh item di dalamnya */
   flex-wrap: wrap; /* Allow wrapping on very small screens */
   gap: 1rem; /* Gap between items if they wrap */
+}
+
+#header-app-title {
+  font-size: 1.4rem; /* Sesuaikan ukuran font judul */
+  font-weight: 600;
+  color: var(--primary);
+  margin-right: auto; /* Mendorong kontrol ke kanan/tengah */
+  white-space: nowrap;
+}
+
+.header-controls-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center; /* Memusatkan grup tombol */
+  flex-grow: 1; /* Mengambil sisa ruang agar bisa di tengah */
+  gap: 1rem; /* Jarak antara interactive-icon-bar dan view-toggle-buttons */
+  flex-wrap: wrap; /* Izinkan pembungkusan jika tidak cukup ruang */
 }
 
 /* Interactive Icon Bar for Controls */
 .interactive-icon-bar {
   display: flex;
   gap: 0.5rem; /* Kurangi jarak antar ikon */
-  margin-top: 0; /* Was 1rem, now handled by stack-header padding */
-  margin-bottom: 0; /* Was 1rem, removed as it's now inline with view-toggle-buttons */
   flex-wrap: nowrap; /* Keep icons in a line, stack-header can wrap the whole group */
   align-items: center;
 }
@@ -134,32 +149,29 @@ button:focus-visible {
   position: relative; /* Each wrapper is a positioning context for its panel */
 }
 
-.icon-trigger-btn {
+.control-trigger-btn { /* Mengganti .icon-trigger-btn */
   background: var(--card-bg);
   border: 1px solid var(--secondary);
   color: var(--primary);
-  padding: 0.45rem; /* Kurangi padding tombol ikon */
-  border-radius: 50%; /* Make it circular */
+  padding: 0.4rem 0.8rem; /* Padding untuk tombol teks */
+  border-radius: var(--radius); /* Radius standar */
   cursor: pointer;
   transition: var(--transition);
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px; /* Perkecil ukuran tombol ikon */
-  height: 36px; /* Perkecil ukuran tombol ikon */
   box-shadow: var(--shadow);
+  font-size: 0.8rem;
+  font-weight: 500;
+  white-space: nowrap;
 }
 
-.icon-trigger-btn:hover,
-.icon-trigger-btn:focus {
+.control-trigger-btn:hover,
+.control-trigger-btn:focus {
   background: var(--secondary);
   color: var(--accent);
   outline: none;
   box-shadow: 0 0 0 3px rgba(212, 163, 115, 0.2); /* Accent focus */
-}
-
-.icon-trigger-btn i {
-  font-size: 1rem; /* Perkecil ukuran ikon di dalam tombol */
 }
 
 .dropdown-panel, .input-panel {
@@ -187,8 +199,6 @@ button:focus-visible {
   display: flex;
   justify-content: center;
   gap: 0.4rem; /* Kurangi jarak antar tombol view */
-  margin-top: 0; /* Was 1rem, now handled by icon-bar margin-bottom */
-  margin-bottom: 0; /* Was 1.5rem, now handled by stack-header margin-bottom */
 }
 
 .view-toggle-btn {
@@ -425,8 +435,14 @@ button:focus-visible {
   }
   
   #stack-header {
-    justify-content: center; /* Center items when they might wrap */
+    flex-direction: column; /* Susun judul di atas kontrol pada layar kecil */
+    align-items: flex-start; /* Ratakan judul ke kiri */
     padding: 0.4rem 0.5rem; /* Sesuaikan padding untuk layar kecil */
+  }
+
+  #header-app-title {
+    margin-right: 0; /* Hapus margin agar tidak mendorong kontrol */
+    margin-bottom: 0.5rem; /* Beri jarak ke kontrol di bawahnya */
   }
 
   .interactive-icon-bar {
@@ -441,6 +457,10 @@ button:focus-visible {
     font-size: 1.75rem;
   }
   
+  .header-controls-wrapper {
+    justify-content: flex-start; /* Ratakan kontrol ke kiri jika membungkus */
+  }
+
   .interactive-icon-bar {
     flex-wrap: wrap; /* Allow individual icons to wrap on very small screens */
   }

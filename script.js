@@ -238,10 +238,10 @@ const dataManager = {
 const iconToggleManager = {
   init: () => {
     const controls = [
-      { trigger: '#google-drive-control .icon-trigger-btn', content: '#driveDropdownContent' },
-      { trigger: '#class-filter-control .icon-trigger-btn', content: '#classSelectContent' },
-      { trigger: '#subject-filter-control .icon-trigger-btn', content: '#subjectSelectContent' },
-      { trigger: '#name-search-control .icon-trigger-btn', content: '#searchNameInputWrapper' }
+      { trigger: '#google-drive-control .control-trigger-btn', content: '#driveDropdownContent' },
+      { trigger: '#class-filter-control .control-trigger-btn', content: '#classSelectContent' },
+      { trigger: '#subject-filter-control .control-trigger-btn', content: '#subjectSelectContent' },
+      { trigger: '#name-search-control .control-trigger-btn', content: '#searchNameInputWrapper' }
     ];
 
     controls.forEach(control => {
@@ -271,7 +271,7 @@ const iconToggleManager = {
     document.querySelectorAll('.icon-control-wrapper .dropdown-panel.active, .icon-control-wrapper .input-panel.active').forEach(panel => {
       if (panel !== contentEl) { // Don't close the current one if it's already open and we're re-clicking its trigger
         panel.classList.remove('active');
-        const associatedTrigger = panel.closest('.icon-control-wrapper').querySelector('.icon-trigger-btn');
+        const associatedTrigger = panel.closest('.icon-control-wrapper').querySelector('.control-trigger-btn');
         if (associatedTrigger) associatedTrigger.setAttribute('aria-expanded', 'false');
       }
     });
@@ -283,7 +283,7 @@ const iconToggleManager = {
   closeAllPanels: () => {
     document.querySelectorAll('.icon-control-wrapper .dropdown-panel.active, .icon-control-wrapper .input-panel.active').forEach(panel => {
       panel.classList.remove('active');
-      const associatedTrigger = panel.closest('.icon-control-wrapper').querySelector('.icon-trigger-btn');
+      const associatedTrigger = panel.closest('.icon-control-wrapper').querySelector('.control-trigger-btn');
       if (associatedTrigger) associatedTrigger.setAttribute('aria-expanded', 'false');
     });
   }
