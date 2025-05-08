@@ -1,7 +1,7 @@
 // service-worker-registration.js
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', async() => {
-    navigator.serviceWorker.register('/sw.js')    
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
       .then(registration => console.log('ServiceWorker registered'))
       .catch(err => console.log('ServiceWorker registration failed:', err));
   });
@@ -9,15 +9,13 @@ if ('serviceWorker' in navigator) {
 
 // Firebase SDK (gunakan versi yang sesuai, contoh v9+)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js"; // Pastikan ini diimpor
 import { getFirestore, collection, getDocs, onSnapshot, addDoc, doc, updateDoc, deleteDoc, query, orderBy, where, enableIndexedDbPersistence, CACHE_SIZE_UNLIMITED } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
-import { getDoc, setDoc } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
 
 // TODO: Ganti dengan konfigurasi Firebase proyek Anda
 const firebaseConfig = {
   apiKey: "AIzaSyB-euXJz9b3HyfvjmG5tzu2wMqvbY3bH5E",
   authDomain: "jadwal-pemakalah-akademik.firebaseapp.com",
-  projectId: "jadwal-pemakalah-akademik", 
+  projectId: "jadwal-pemakalah-akademik",
   storageBucket: "jadwal-pemakalah-akademik.firebasestorage.app",
   messagingSenderId: "230646165475",
   appId: "1:230646165475:web:9f0ce777977eb2ddb07ad6",
@@ -27,12 +25,10 @@ const firebaseConfig = {
 // Initialize Firebase
 const fbApp = initializeApp(firebaseConfig);
 const db = getFirestore(fbApp); // Dapatkan instance Firestore
-const auth = getAuth(fbApp); // Dapatkan instance Firebase Auth
 console.log("Firebase Initialized. Firestore instance:", db ? "OK" : "Failed");
 
 // app.js
 let dataByClass = {}; // Akan diisi dari Firestore, atau bisa juga tidak digunakan lagi jika struktur data utama adalah array
-let currentUser = null; // Untuk menyimpan informasi pengguna yang login
 let allSchedulesFromFirestore = []; // Untuk menyimpan semua jadwal dari Firestore
 
 // Global Elements
@@ -57,10 +53,7 @@ const elements = {
   },
   hamburgerBtn: document.getElementById('hamburger-menu-btn'),
   mobileMenuPanel: document.getElementById('mobile-menu-panel'),
-  closeMobileMenuBtn: document.getElementById('close-mobile-menu-btn'),
-  loginBtn: document.getElementById('login-btn'), // Pastikan ini ada
-  logoutBtn: document.getElementById('logout-btn') // Pastikan ini ada
-
+  closeMobileMenuBtn: document.getElementById('close-mobile-menu-btn')
 };
 
 // Utility Functions
@@ -132,16 +125,7 @@ const calendarManager = {
   generateEventsFromFirestore: (firestoreDocs) => {
     console.log("calendarManager.generateEventsFromFirestore - Input docs:", firestoreDocs);
     if (!firestoreDocs || firestoreDocs.length === 0) return [];
-
-    let relevantDocs = firestoreDocs;
-    // Jika ada pengguna yang login, filter dokumen untuk kalender
-    if (currentUser && currentUser.email) {
-      relevantDocs = firestoreDocs.filter(doc => {
-        const data = doc.data();
-        return data.peserta && data.peserta.some(p => p.toLowerCase().includes(currentUser.email.toLowerCase()));
-      });
-    }
-    return relevantDocs.map(doc => {
+    return firestoreDocs.map(doc => {
       const data = doc.data();
       return {
         title: `${data.peserta.slice(0, 2).join(', ')}${data.peserta.length > 2 ? ', ...' : ''}`,
@@ -151,15 +135,14 @@ const calendarManager = {
         }
       };
     });
-  }
-}; // Penutup untuk calendarManager yang benar
+    // console.log("calendarManager.generateEventsFromFirestore - Output events:", generatedEvents); // Bisa di-uncomment jika perlu
+  },
 
-// Data Manager
-// Pastikan rerenderEvents ada di dalam calendarManager
-calendarManager.rerenderEvents = (newFirestoreDocs) => {
-  if (calendarManager.calendarInstance) {
-    calendarManager.calendarInstance.removeAllEvents();
-    calendarManager.calendarInstance.addEventSource(calendarManager.generateEventsFromFirestore(newFirestoreDocs));
+  rerenderEvents: (newFirestoreDocs) => {
+    if (calendarManager.calendarInstance) {
+      calendarManager.calendarInstance.removeAllEvents();
+      calendarManager.calendarInstance.addEventSource(calendarManager.generateEventsFromFirestore(newFirestoreDocs));
+    }
   }
 };
 
@@ -188,30 +171,25 @@ const dataManager = {
     console.log("dataManager.getFilteredDataFromFirestore - Input schedules:", schedules, "Class:", selectedClass, "Subject:", selectedSubject, "Query:", nameQuery);
     if (!schedules || schedules.length === 0) return [];
     const today = new Date().setHours(0,0,0,0);
-    
-    let filteredSchedules = schedules.filter(doc => {
+
+    return schedules.filter(doc => {
       const data = doc.data();
-      const eventDate = new Date(data.date).setHours(0, 0, 0, 0);
+      const eventDate = new Date(data.date).setHours(0,0,0,0);
       if (eventDate < today) return false;
 
-      // Filter berdasarkan class
       if (selectedClass !== 'all' && data.className !== selectedClass) return false;
-      // Filter berdasarkan subject
       if (selectedSubject && data.subject !== selectedSubject) return false;
-      // Filter berdasarkan nameQuery
-      const queryText = nameQuery ? nameQuery.toLowerCase() : '';
-      return !queryText || data.peserta.some(name => name.toLowerCase().includes(queryText));
-    }).map(doc => ({ ...doc.data(), id: doc.id })).sort((a, b) => new Date(a.date) - new Date(b.date));
-    // console.log("dataManager.getFilteredDataFromFirestore - Output filteredData:", filteredSchedules); // Bisa di-uncomment
 
-    // Jika ada pengguna yang login, filter lebih lanjut berdasarkan email pengguna di field peserta
-    if (currentUser && currentUser.email) {
-      console.log(`Filtering for user: ${currentUser.email}`);
-      filteredSchedules = filteredSchedules.filter(schedule => 
-        schedule.peserta && schedule.peserta.some(p => p.toLowerCase().includes(currentUser.email.toLowerCase()))
-      );
-    }
-    return filteredSchedules;
+      if (nameQuery) {
+        const queryText = nameQuery.toLowerCase();
+        return data.peserta.some(name => name.toLowerCase().includes(queryText));
+      }
+      return true;
+    }).map(doc => { // Transformasi ke format yang diharapkan renderResults
+        const data = doc.data();
+        return { ...data, id: doc.id }; // Sertakan ID dokumen jika perlu
+    }).sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime()); // Pastikan perbandingan tanggal benar
+    // console.log("dataManager.getFilteredDataFromFirestore - Output filteredData:", filteredData); // Bisa di-uncomment
   },
 
   renderResults: (results, query) => {
@@ -325,7 +303,6 @@ const uiController = {
     initialSpinner.className = 'loading-spinner';
     initialSpinner.style.display = 'block';
     document.body.insertBefore(initialSpinner, document.querySelector('.container'));
-
     
     let persistenceEnabled = false;
     try {
@@ -349,48 +326,41 @@ const uiController = {
       // Namun, untuk saat ini, kita akan tetap mencoba mengambil data.
     }
 
-    // Event listeners untuk login/logout
-    elements.loginBtn.addEventListener('click', authManager.signInWithGoogle);
-    elements.logoutBtn.addEventListener('click', authManager.signOutUser);
-
-    // Pindahkan listener Firestore ke luar onAuthStateChanged jika data jadwal tidak bergantung pada user untuk pengambilan awal
+    // Selalu coba siapkan listener Firestore, baik persistence berhasil atau tidak (kecuali ada error fatal)
     try {
       const schedulesCollection = collection(db, "schedules");
-        console.log("Setting up Firestore onSnapshot listener for 'schedules' collection...");
-        onSnapshot(query(schedulesCollection, orderBy("date")), (querySnapshot) => {
-          console.log("Firestore snapshot diterima. Jumlah dokumen:", querySnapshot.size);
-          allSchedulesFromFirestore = querySnapshot.docs;
-          if (querySnapshot.empty) {
-            console.warn("Tidak ada dokumen jadwal yang ditemukan di Firestore.");
-            elements.resultsDiv.innerHTML = "<p>Tidak ada jadwal yang tersedia saat ini.</p>";
-          }
-          // Pastikan allSchedulesFromFirestore adalah array sebelum dikirim
-          uiController.processInitialData(allSchedulesFromFirestore); // Panggil ini hanya ketika data benar-benar ada
-          if (initialSpinner.parentNode) initialSpinner.remove();
-        }, (error) => {
-          console.error("Firestore onSnapshot error:", error);
-          console.error("Error fetching schedules from Firestore: ", error);
-          elements.resultsDiv.innerHTML = "<p>Gagal memuat data jadwal. Silakan periksa koneksi Anda atau coba lagi nanti.</p>";
-          if (initialSpinner.parentNode) initialSpinner.remove();
-        });
-      } catch (error) {
-        console.error("Gagal setup listener Firestore (kesalahan lebih lanjut):", error);
+      console.log("Setting up Firestore onSnapshot listener for 'schedules' collection...");
+      onSnapshot(query(schedulesCollection, orderBy("date")), (querySnapshot) => {
+        console.log("Firestore snapshot diterima. Jumlah dokumen:", querySnapshot.size);
+        allSchedulesFromFirestore = querySnapshot.docs;
+        if (querySnapshot.empty) {
+          console.warn("Tidak ada dokumen jadwal yang ditemukan di Firestore.");
+          elements.resultsDiv.innerHTML = "<p>Tidak ada jadwal yang tersedia saat ini.</p>";
+        }
+        // Pastikan allSchedulesFromFirestore adalah array sebelum dikirim
+        uiController.processInitialData(allSchedulesFromFirestore); // Panggil ini hanya ketika data benar-benar ada
         if (initialSpinner.parentNode) initialSpinner.remove();
+      }, (error) => {
+        console.error("Firestore onSnapshot error:", error);
+        console.error("Error fetching schedules from Firestore: ", error);
+        elements.resultsDiv.innerHTML = "<p>Gagal memuat data jadwal. Silakan periksa koneksi Anda atau coba lagi nanti.</p>";
+        if (initialSpinner.parentNode) initialSpinner.remove();
+      });
+    } catch (error) {
+      console.error("Gagal setup listener Firestore (kesalahan lebih lanjut):", error);
+      if (initialSpinner.parentNode) initialSpinner.remove();
     }
 
-    // Event Listeners UI (cukup di-set sekali)
+    // Event Listeners
     elements.classSelect.addEventListener('change', uiController.handleClassChange);
     elements.subjectSelect.addEventListener('change', uiController.handleSearch);
     elements.nameInput.addEventListener('input', utils.debounce(uiController.handleSearch, 300));
-    elements.popup.overlay.addEventListener('click', uiController.closePopup);
-    elements.resultsDiv.addEventListener('click', uiController.handleDatacardClick);
+    elements.popup.overlay.addEventListener('click', uiController.closePopup); // Tambahkan listener untuk klik overlay
+    elements.resultsDiv.addEventListener('click', uiController.handleDatacardClick); // Event delegation untuk klik datacard
     elements.driveDropdown.addEventListener("change", uiController.handleDriveSelect);
-
-    const savedClass = localStorage.getItem('selectedClass');
-    if(savedClass) elements.classSelect.value = savedClass;
-
-    // Listener PWA dan menu mobile bisa tetap di sini
-  // Listener untuk tombol tutup PWA Install Prompt
+    // document.getElementById('close-popup').addEventListener('click', uiController.closePopup); // Sudah dihandle di HTML onclick
+    
+    // Listener untuk tombol tutup PWA Install Prompt
     const closePwaInstallBtn = document.getElementById('closePwaInstallPromptBtn');
     if (closePwaInstallBtn) {
       // Pastikan elemen pwaPopup ada sebelum menambahkan event listener
@@ -405,18 +375,19 @@ const uiController = {
     document.getElementById('add-to-home').addEventListener('click', uiController.handlePWAInstall);
     // Load Saved Preferences
     // Tambahkan event listener untuk tombol view toggle
-    elements.viewToggleButtons.calendar.addEventListener('click', () => uiController.setView('calendar'));elements.viewToggleButtons.datacard.addEventListener('click', () => uiController.setView('datacard'));
+    elements.viewToggleButtons.calendar.addEventListener('click', () => uiController.setView('calendar'));
+    elements.viewToggleButtons.datacard.addEventListener('click', () => uiController.setView('datacard'));
 
-   // Event listeners untuk menu mobile
-   elements.hamburgerBtn.addEventListener('click', uiController.toggleMobileMenu);
-   elements.closeMobileMenuBtn.addEventListener('click', uiController.closeMobileMenu);
+    // Event listeners untuk menu mobile
+    elements.hamburgerBtn.addEventListener('click', uiController.toggleMobileMenu);
+    elements.closeMobileMenuBtn.addEventListener('click', uiController.closeMobileMenu);
 
-  }, // Akhir dari uiController.init
+    const savedClass = localStorage.getItem('selectedClass');
+    if(savedClass) elements.classSelect.value = savedClass;    
+
+  },
 
   processInitialData: (schedulesDocs) => {
-    // Jika belum ada pengguna yang login, atau jika data tidak bergantung pada pengguna,
-    // kita bisa langsung proses. Jika data bergantung pada pengguna,
-    // pemanggilan ini mungkin perlu ditunda atau dipanggil ulang setelah login.
     console.log("Memproses data awal. Jumlah dokumen diterima:", schedulesDocs.length);
     // Initialize Calendar
     calendarManager.init(schedulesDocs); // Inisialisasi data kalender
@@ -654,81 +625,5 @@ const uiController = {
   }
 };
 
-
-
-
-
-const authManager = {
-  signInWithGoogle: async () => {
-    const provider = new GoogleAuthProvider();
-    try {
-      const result = await signInWithPopup(auth, provider);
-      // Pengguna berhasil login
-      console.log("User signed in:", result.user);
-      console.log("User email:", result.user.email);
-      console.log("User UID:", result.user.uid);
-
-      // Check if user data exists in Firestore
-      const userRef = doc(db, "participants", result.user.uid);
-      const userSnap = await getDoc(userRef);
-
-      if (!userSnap.exists()) {
-        // If user data doesn't exist, add it
-        console.log("User data not found. Creating new user data.");
-        const userData = {
-          name: "Muhammad Syamsur Rijal", // Fixed name
-          email: result.user.email, // User's email
-        };
-        try {
-          await setDoc(userRef, userData);
-          console.log("New user data added to Firestore.");
-        } catch (error) {
-          console.error("Error adding new user data to Firestore:", error);
-          alert(`Gagal menyimpan data pengguna: ${error.message}`);
-        }
-      } else {
-        console.log("User data already exists.");
-      }
-
-
-      // UI akan diupdate oleh onAuthStateChanged
-    } catch (error) {
-      console.error("Error signing in with Google:", error);
-      alert(`Gagal login dengan Google: ${error.message}`);
-    }
-  },
-
-  signOutUser: async () => {
-    try {
-      await signOut(auth);
-      console.log("User signed out");
-      // UI akan diupdate oleh onAuthStateChanged
-    } catch (error) {
-      console.error("Error signing out:", error);
-      alert(`Gagal logout: ${error.message}`);
-    }
-  },
-
-  handleAuthStateChange: (user) => {
-    currentUser = user; // Update global currentUser
-    if (user) {
-      // Pengguna login
-      elements.loginBtn.style.display = 'none';
-      elements.logoutBtn.style.display = 'block';
-      elements.logoutBtn.textContent = `Logout (${user.email.split('@')[0]})`; // Tampilkan bagian email sebelum @
-      console.log("Auth state changed: User is logged in", user);
-    } else {
-      // Pengguna logout
-      elements.loginBtn.style.display = 'block';
-      elements.logoutBtn.style.display = 'none';
-      console.log("Auth state changed: User is logged out");
-    }
-    // Setelah status auth berubah, muat ulang atau filter data
-    uiController.handleSearch(); // Ini akan memfilter data berdasarkan currentUser yang baru
-    calendarManager.rerenderEvents(allSchedulesFromFirestore); // Update kalender juga
-  }
-};
-
 // Initialize Application
-document.addEventListener('DOMContentLoaded', uiController.init); // Inisialisasi UI dan listener dasar
-onAuthStateChanged(auth, authManager.handleAuthStateChange); // Listener status autentikasi global
+document.addEventListener('DOMContentLoaded', uiController.init);

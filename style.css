@@ -242,10 +242,6 @@ button:focus-visible {
   color: var(--accent);
 }
 
-#auth-control .control-trigger-btn {
-  /* width: 150px; */ /* Biarkan auto atau sesuaikan jika perlu lebar tetap */
-}
-
 .dropdown-panel, .input-panel {
   display: none;
   position: absolute;
@@ -555,9 +551,6 @@ button:focus-visible {
   .mobile-menu-panel .control-trigger-btn,
   .mobile-menu-panel .view-toggle-btn {
     width: 100%;
-  }
-  .mobile-menu-panel #auth-control .control-trigger-btn {
-    width: 100%; /* Pastikan tombol login/logout juga full width di mobile menu */
   }
 }
 
