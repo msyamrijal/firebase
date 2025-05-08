@@ -213,29 +213,30 @@ button:focus-visible {
 
 .view-toggle-btn {
   padding: 0.4rem 0.9rem; /* Kurangi padding tombol view */
-  border: 1px solid var(--secondary);
-  background-color: var(--card-bg);
-  color: var(--primary);
+  border: 1px solid var(--secondary); /* Samakan dengan .control-trigger-btn */
+  background-color: var(--card-bg); /* Samakan dengan .control-trigger-btn */
+  color: var(--primary); /* Samakan dengan .control-trigger-btn */
   border-radius: var(--radius);
   cursor: pointer;
   transition: var(--transition);
   font-size: 0.8rem; /* Perkecil font tombol view */
   font-weight: 500;
+  white-space: nowrap; /* Tambahkan agar teks tidak wrap jika terlalu panjang */
 }
 
 .view-toggle-btn:hover,
 .view-toggle-btn:focus-visible {
-  background-color: var(--secondary);
-  color: var(--accent);
-  outline: 2px solid var(--accent); /* Added focus style */
-  outline-offset: 2px;
+  background: var(--secondary); /* Samakan dengan hover .control-trigger-btn */
+  color: var(--accent); /* Samakan dengan hover .control-trigger-btn */
+  outline: none; /* Hapus outline default, gunakan box-shadow untuk fokus */
+  box-shadow: 0 0 0 3px rgba(212, 163, 115, 0.2); /* Samakan dengan focus .control-trigger-btn */
 }
 
 .view-toggle-btn.active {
   background-color: var(--primary);
   color: var(--card-bg);
   border-color: var(--primary);
-  box-shadow: 0 2px 4px rgba(74, 64, 58, 0.1); /* Adjusted shadow color */
+  /* box-shadow: 0 2px 4px rgba(74, 64, 58, 0.1); */ /* Opsional: shadow saat aktif, bisa disamakan dengan .control-trigger-btn[aria-expanded="true"] jika diinginkan */
 }
 
 /* Calendar */
