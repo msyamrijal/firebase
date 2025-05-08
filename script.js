@@ -113,7 +113,7 @@ const calendarManager = {
             title: `${entry.peserta.slice(0,2).join(', ')}${entry.peserta.length>2 ? ', ...' : ''}`,
             date,
             extendedProps: {
-              detail: `<strong>Kelas:</strong> ${className}<br><strong>Mata Kuliah:</strong> ${subject}<br><strong>Waktu:</strong> ${entry.time || 'N/A'}<br><strong>Peserta:</strong> ${entry.peserta.join(', ')}<br><strong>Materi:</strong> ${entry.materi || 'Belum ada materi'}`
+              detail: `<strong>Kelas:</strong> ${className}<br><strong>Mata Kuliah:</strong> ${subjectName}<br><strong>Waktu:</strong> ${entry.time || 'N/A'}<br><strong>Peserta:</strong> ${entry.peserta.join(', ')}<br><strong>Materi:</strong> ${entry.materi || 'Belum ada materi'}`
             }
           });
         });
@@ -621,7 +621,7 @@ const uiController = {
     if (elements.mobileMenuPanel.classList.contains('active')) {
       uiController.toggleMobileMenu(); // Gunakan toggle untuk konsistensi state aria
     }
-    elements.pwaPopup.style.display = 'none';
+    // elements.pwaPopup.style.display = 'none'; // Baris ini sepertinya salah tempat, mungkin ingin dihapus atau dipindahkan
   }
 };
 

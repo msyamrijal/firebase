@@ -62,16 +62,13 @@ body {
 /* Hero Section */
 .hero {
   text-align: center;
-  margin-bottom: 0; /* Dihapus karena stack-header akan memberi margin bawah */
+  margin-bottom: 0;
   animation: fadeIn 0.8s ease both;
 }
 
 .title {
   font-size: 2.5rem;
   font-weight: 700;
-  /* background: var(--gradient); // Mungkin tidak perlu gradien jika ingin lebih minimalis */
-  -webkit-background-clip: text;
-  /* -webkit-text-fill-color: transparent; Dihapus untuk judul header baru */
   margin-bottom: 1.5rem;
 }
 
@@ -80,68 +77,72 @@ body {
   position: sticky;
   top: 0;
   background-color: var(--background);
-  padding: 0.4rem 0.75rem; /* Lebih ramping lagi */
-  z-index: 950; /* Above content, below popups */
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); /* Shadow disesuaikan untuk background putih */
-  margin-bottom: 1.5rem; /* Space to content below when not sticky or at initial load */
+  padding: 0.4rem 0.75rem;
+  z-index: 950;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  margin-bottom: 1.5rem;
   display: flex;
   align-items: center;
-  /* justify-content: space-between; Diatur oleh item di dalamnya */
-  flex-wrap: wrap; /* Allow wrapping on very small screens */
-  gap: 1rem; /* Gap between items if they wrap */
+  justify-content: space-between; /* Judul kiri, sisanya (panel/hamburger) kanan */
+  gap: 1rem;
 }
 
 #header-app-title {
-  font-size: 1.4rem; /* Sesuaikan ukuran font judul */
+  font-size: 1.4rem;
   font-weight: 600;
   color: var(--primary);
-  /* margin-right: auto; Dihapus agar judul dan hamburger bisa berdampingan */
   white-space: nowrap;
+  margin-right: 1rem; /* Beri jarak jika ada kontrol desktop */
 }
 
+/* Desktop Controls Wrapper (dalam #mobile-menu-panel yang di-style ulang untuk desktop) */
 .header-controls-wrapper {
   display: flex;
   align-items: center;
-  justify-content: center; /* Memusatkan grup tombol */
-  flex-grow: 1; /* Mengambil sisa ruang agar bisa di tengah (untuk desktop) */
-  gap: 0.5rem; /* Jarak antar setiap tombol/kontrol wrapper */
-  flex-wrap: wrap; /* Izinkan pembungkusan jika tidak cukup ruang */
+  justify-content: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
-/* Hamburger Menu Button (Visible on Mobile) */
+/* Hamburger Menu Button (Default Sembunyi) */
 .hamburger-menu-btn {
-  display: none; /* Sembunyikan di desktop */
+  display: none;
   background: none;
   border: none;
   color: var(--primary);
   font-size: 1.5rem;
   cursor: pointer;
   padding: 0.5rem;
-  margin-left: auto; /* Mendorong ke kanan */
-  z-index: 1001; /* Di atas panel menu saat tertutup */
+  /* margin-left: auto; Tidak perlu jika stack-header sudah space-between */
+  z-index: 1001;
 }
 
-/* Mobile Menu Panel */
+/* Mobile Menu Panel (Default: sebagai wrapper kontrol desktop) */
 .mobile-menu-panel {
-  display: none; /* Sembunyikan di desktop */
-  position: fixed;
-  top: 0;
-  left: -300px; /* Mulai dari luar layar kiri */
-  width: 280px; /* Lebar panel menu */
-  height: 100%;
-  background-color: var(--card-bg);
-  box-shadow: 2px 0 5px rgba(0,0,0,0.1);
-  padding: 2rem 1rem 1rem; /* Padding atas lebih besar untuk tombol close */
-  z-index: 1000; /* Di atas konten lain, di bawah popup utama */
-  transition: left 0.3s ease-in-out;
-  overflow-y: auto;
+  display: flex; /* Agar bisa menampung .header-controls-wrapper */
+  flex-grow: 1; /* Ambil sisa ruang di header desktop */
+  align-items: center;
+  justify-content: center; /* Pusatkan .header-controls-wrapper di desktop */
+  /* Reset gaya panel geser untuk desktop */
+  position: static;
+  width: auto;
+  height: auto;
+  background-color: transparent;
+  box-shadow: none;
+  padding: 0;
+  left: auto;
+  transition: none;
+  overflow: visible;
+  z-index: auto;
 }
 
 .mobile-menu-panel.active {
-  left: 0; /* Geser ke dalam layar */
+  /* Gaya .active hanya relevan untuk mobile (geser masuk) */
 }
 
+/* Tombol Tutup Menu Mobile (Default Sembunyi) */
 .close-mobile-menu-btn {
+  display: none;
   position: absolute;
   top: 0.5rem;
   right: 0.5rem;
@@ -152,35 +153,23 @@ body {
   cursor: pointer;
 }
 
-
-/* Interactive Icon Bar for Controls */
-/* .interactive-icon-bar sudah dihapus dari HTML sebagai wrapper utama, 
-   .header-controls-wrapper sekarang menangani layout ini */
-/* .interactive-icon-bar {
-  display: flex;
-  gap: 0.5rem; 
-  flex-wrap: nowrap; 
-  align-items: center;
-} */
-
-select, 
+select,
 .dropdown-panel input[type="text"],
 .input-panel input[type="text"] {
-  /* width: 100%; Dihapus agar bisa diatur oleh .select-as-button */
-  padding: 0.75rem; /* Simplified padding */
+  padding: 0.75rem;
   border: 2px solid #e2e8f0;
   border-radius: var(--radius);
   font-size: 1rem;
   background: var(--card-bg);
   transition: var(--transition);
-  appearance: none; /* Pastikan ini ada */
+  appearance: none;
 }
 
 select:focus,
 .dropdown-panel input[type="text"]:focus,
 input[type="text"]:focus {
   outline: none;
-  border-color: var(--primary); /* Gunakan primary oranye untuk border fokus */
+  border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(212, 163, 115, 0.2);
 }
 
@@ -188,30 +177,28 @@ button:focus-visible {
   outline: none;
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(99,102,241,0.2);
-  /* Atau gaya fokus kustom lainnya */
 }
 
-/* Gaya untuk select yang ingin terlihat seperti tombol */
 .select-as-button {
   background-color: var(--card-bg);
   border: 1px solid var(--secondary);
   color: var(--primary);
-  padding: 0.4rem 2rem 0.4rem 0.9rem; /* Padding kanan lebih besar untuk ruang panah */
+  padding: 0.4rem 2rem 0.4rem 0.9rem;
   border-radius: var(--radius);
   cursor: pointer;
   transition: var(--transition);
   font-size: 0.8rem;
   font-weight: 500;
   white-space: nowrap;
-  appearance: none; /* Hapus tampilan default browser */
+  appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23FF7F50'%3E%3Cpath fill-rule='evenodd' d='M4.22 6.22a.75.75 0 0 1 1.06 0L8 8.94l2.72-2.72a.75.75 0 1 1 1.06 1.06l-3.25 3.25a.75.75 0 0 1-1.06 0L4.22 7.28a.75.75 0 0 1 0-1.06Z'/%3E%3C/svg%3E"); /* Panah SVG, warna #FF7F50 (var(--primary)) */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23FF7F50'%3E%3Cpath fill-rule='evenodd' d='M4.22 6.22a.75.75 0 0 1 1.06 0L8 8.94l2.72-2.72a.75.75 0 1 1 1.06 1.06l-3.25 3.25a.75.75 0 0 1-1.06 0L4.22 7.28a.75.75 0 0 1 0-1.06Z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 0.5rem center;
   background-size: 1em 1em;
-  line-height: normal; /* Atur line-height agar teks dan panah sejajar */
-  min-width: 100px; /* Beri lebar minimum agar tidak terlalu kecil */
+  line-height: normal;
+  min-width: 100px;
 }
 
 .select-as-button:hover,
@@ -220,57 +207,52 @@ button:focus-visible {
   color: var(--accent);
   border-color: var(--secondary);
   outline: none;
-  box-shadow: 0 0 0 3px rgba(255, 127, 80, 0.3); /* Sesuaikan warna shadow fokus */
+  box-shadow: 0 0 0 3px rgba(255, 127, 80, 0.3);
 }
 
-/* Icon Control Styles */
 .icon-control-wrapper {
-  position: relative; /* Each wrapper is a positioning context for its panel */
+  position: relative;
 }
 
 .control-trigger-btn {
   background: var(--card-bg);
   border: 1px solid var(--secondary);
   color: var(--primary);
-  padding: 0.4rem 0.9rem; /* Samakan dengan .view-toggle-btn */
-  border-radius: var(--radius); /* Radius standar */
+  padding: 0.4rem 0.9rem;
+  border-radius: var(--radius);
   cursor: pointer;
   transition: var(--transition);
   display: flex;
   align-items: center;
   justify-content: center;
-  /* box-shadow: var(--shadow); Dihilangkan agar sama dengan view-toggle-btn non-active */
-  font-size: 0.8rem; /* Samakan dengan .view-toggle-btn */
-  font-weight: 500; /* Samakan dengan .view-toggle-btn */
+  font-size: 0.8rem;
+  font-weight: 500;
   white-space: nowrap;
 }
-.control-trigger-btn:hover, /* Gaya ini hanya untuk tombol "Cari" sekarang */
+.control-trigger-btn:hover,
 .control-trigger-btn:focus {
   background: var(--secondary);
   color: var(--accent);
-  outline: none; /* Pastikan outline: none; */
-  box-shadow: 0 0 0 3px rgba(212, 163, 115, 0.2); /* Accent focus */
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(212, 163, 115, 0.2);
 }
-/* Tambahkan gaya aktif jika diperlukan, mirip dengan .view-toggle-btn.active */
-.control-trigger-btn[aria-expanded="true"] { /* Gaya ini hanya untuk tombol "Cari" sekarang */
-  background-color: var(--secondary); /* Atau warna lain untuk menandakan aktif */
+.control-trigger-btn[aria-expanded="true"] {
+  background-color: var(--secondary);
   color: var(--accent);
-  /* box-shadow: 0 2px 4px rgba(74, 64, 58, 0.1); */ /* Opsional: shadow saat aktif */
 }
-
 
 .dropdown-panel, .input-panel {
-  display: none; /* Hidden by default */
+  display: none;
   position: absolute;
-  top: calc(100% + 6px); /* Sesuaikan posisi dropdown karena tombol lebih kecil */
+  top: calc(100% + 6px);
   left: 50%;
-  transform: translateX(-50%); /* Center below icon */
+  transform: translateX(-50%);
   background: var(--card-bg);
   border-radius: var(--radius);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1); /* Shadow disesuaikan */
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
   padding: 1rem;
-      z-index: 960; /* Lebih tinggi dari stack-header (950) */
-  min-width: 220px; /* Kurangi lebar minimum dropdown jika perlu */
+  z-index: 960;
+  min-width: 220px;
   border: 1px solid var(--secondary);
 }
 
@@ -279,45 +261,36 @@ button:focus-visible {
   animation: fadeInPanel 0.2s ease-out;
 }
 
-/* View Toggle Buttons */
-/* .view-toggle-buttons sudah dihapus dari HTML sebagai wrapper, 
-   .header-controls-wrapper sekarang menangani layout ini */
-/* .view-toggle-buttons {
-  display: flex;
-  justify-content: center;
-  gap: 0.4rem; /* Kurangi jarak antar tombol view */
-} */
-
 .view-toggle-btn {
-  padding: 0.4rem 0.9rem; /* Kurangi padding tombol view */
-  border: 1px solid var(--secondary); /* Samakan dengan .control-trigger-btn */
-  background-color: var(--card-bg); /* Samakan dengan .control-trigger-btn */
-  color: var(--primary); /* Samakan dengan .control-trigger-btn */
+  padding: 0.4rem 0.9rem;
+  border: 1px solid var(--secondary);
+  background-color: var(--card-bg);
+  color: var(--primary);
   border-radius: var(--radius);
   cursor: pointer;
   transition: var(--transition);
-  font-size: 0.8rem; /* Perkecil font tombol view */
+  font-size: 0.8rem;
   font-weight: 500;
-  white-space: nowrap; /* Tambahkan agar teks tidak wrap jika terlalu panjang */
+  white-space: nowrap;
 }
 
 .view-toggle-btn:hover,
 .view-toggle-btn:focus-visible {
-  background: var(--secondary); /* Samakan dengan hover .control-trigger-btn */
-  color: var(--accent); /* Samakan dengan hover .control-trigger-btn */
-  outline: none; /* Hapus outline default, gunakan box-shadow untuk fokus */
-  box-shadow: 0 0 0 3px rgba(255, 127, 80, 0.3); /* Sesuaikan warna shadow fokus dengan tema oranye */
+  background: var(--secondary);
+  color: var(--accent);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 127, 80, 0.3);
 }
 
 .view-toggle-btn.active {
-  background-color: var(--secondary); /* Samakan dengan .control-trigger-btn[aria-expanded="true"] */
-  color: var(--accent); /* Samakan dengan .control-trigger-btn[aria-expanded="true"] */
-  border-color: var(--secondary); /* Sesuaikan border color jika perlu, atau biarkan default */
+  background-color: var(--secondary);
+  color: var(--accent);
+  border-color: var(--secondary);
 }
 
 /* Calendar */
 #calendar {
-  margin-top: 0; /* Was 1rem, now spacing is from stack-header's margin-bottom */
+  margin-top: 0;
   border-radius: var(--radius);
   overflow: hidden;
   box-shadow: var(--shadow);
@@ -328,7 +301,7 @@ button:focus-visible {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 1.5rem;
-  margin-top: 0; /* Was 2rem, now spacing is from stack-header's margin-bottom (via hero) or directly if hero has no other content */
+  margin-top: 0;
 }
 
 .result-card {
@@ -344,10 +317,9 @@ button:focus-visible {
 
 .result-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 16px rgba(255, 127, 80, 0.1); /* Shadow hover kartu dengan nuansa oranye */
+  box-shadow: 0 8px 16px rgba(255, 127, 80, 0.1);
 }
 
-/* Card Elements */
 .card-meta {
   display: flex;
   align-items: center;
@@ -358,7 +330,7 @@ button:focus-visible {
 
 .card-meta i {
   font-size: 1.1rem;
-  color: var(--primary); /* Ikon menggunakan warna oranye utama */
+  color: var(--primary);
 }
 
 .card-date {
@@ -368,23 +340,21 @@ button:focus-visible {
 
 .card-group {
   padding: 0.75rem;
-  background: rgba(255, 127, 80, 0.05); /* Background grup dengan nuansa oranye sangat tipis */
+  background: rgba(255, 127, 80, 0.05);
   border-radius: 8px;
   font-size: 0.95rem;
   color: var(--text);
 }
 
 .highlight {
-  background: rgba(255, 99, 71, 0.2); /* Highlight dengan warna oranye kemerahan (Tomato) tipis */
-  color: var(--accent); /* Teks highlight menggunakan warna aksen oranye */
+  background: rgba(255, 99, 71, 0.2);
+  color: var(--accent);
   padding: 0.1rem 0.3rem;
   border-radius: 4px;
 }
 
-/* Clickable items in datacard */
 .clickable-item {
   cursor: pointer;
-  /* text-decoration: underline; // Bisa dihilangkan jika ingin lebih bersih */
   color: var(--accent);
   transition: color 0.2s ease;
 }
@@ -413,7 +383,7 @@ button:focus-visible {
   transform: translate(-50%, -50%);
   background: var(--card-bg);
   padding: 2rem;
-  border-radius: var(--radius); 
+  border-radius: var(--radius);
   box-shadow: var(--shadow);
   z-index: 1000;
   max-width: 90%;
@@ -421,8 +391,8 @@ button:focus-visible {
 }
 
 .popup-main-title {
-  font-size: 1.4rem; /* Adjusted size */
-  color: var(--primary); /* Judul popup dengan warna oranye utama */
+  font-size: 1.4rem;
+  color: var(--primary);
   margin-bottom: 1rem;
   text-align: center;
 }
@@ -438,22 +408,21 @@ button:focus-visible {
   color: var(--text-light);
 }
 
-/* Related Schedules List in Popup */
 .related-schedules-list {
   list-style: none;
   padding: 0;
-  max-height: 350px; /* Increased height */
+  max-height: 350px;
   overflow-y: auto;
-  margin-top: 0.5rem; /* Space from title */
+  margin-top: 0.5rem;
 }
 
 .related-schedules-list li {
-  background-color: rgba(255, 127, 80, 0.03); /* Background item list dengan nuansa oranye sangat tipis */
-  padding: 0.85rem; /* Slightly more padding */
-  border-radius: var(--radius); /* Consistent radius */
+  background-color: rgba(255, 127, 80, 0.03);
+  padding: 0.85rem;
+  border-radius: var(--radius);
   margin-bottom: 0.75rem;
   border: 1px solid var(--secondary);
-  font-size: 0.9rem; /* Slightly smaller font for list items */
+  font-size: 0.9rem;
 }
 
 .related-schedules-list li strong {
@@ -520,66 +489,67 @@ button:focus-visible {
   .title {
     font-size: 2rem;
   }
-  
+
   #stack-header {
-    flex-direction: row; /* Judul dan hamburger sejajar */
-    align-items: center; 
-    justify-content: space-between; /* Judul kiri, hamburger kanan */
-    padding: 0.4rem 0.75rem; 
-    position: relative; 
+    /* justify-content: space-between; sudah di atas */
   }
 
   #header-app-title {
-    margin-right: 0; 
-    margin-bottom: 0; 
-    text-align: left; 
+    /* margin-right: 0; sudah di atas */
   }
 
   .hamburger-menu-btn {
-    display: block; 
-    position: static; /* Tidak perlu absolute jika stack-header sudah flex space-between */
-    /* top: 0.2rem;  Dihapus */
-    /* right: 0.5rem; Dihapus */
+    display: block;
   }
 
+  /* Mobile Menu Panel - Override default (desktop) styles */
   .mobile-menu-panel {
-    display: block; /* Panel menu sekarang dikontrol oleh JS */
+    display: block; /* Aktifkan display untuk mobile, visibilitas dikontrol JS .active */
+    position: fixed;
+    top: 0;
+    left: -300px; /* Mulai dari luar layar kiri */
+    width: 280px;
+    height: 100%;
+    background-color: var(--card-bg);
+    box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+    padding: 2rem 1rem 1rem;
+    z-index: 1000;
+    transition: left 0.3s ease-in-out;
+    overflow-y: auto;
+    /* Reset flex-grow dari desktop */
+    flex-grow: 0;
   }
 
-  /* Sembunyikan kontrol desktop di mobile */
-  #stack-header > .header-controls-wrapper {
-     display: none; /* Sembunyikan wrapper kontrol desktop */
+  .mobile-menu-panel.active {
+    left: 0; /* Geser ke dalam layar */
   }
-  
+
+  .close-mobile-menu-btn {
+    display: block; /* Tampilkan tombol close di mobile */
+  }
+
+  /* Sembunyikan kontrol desktop di mobile (jika .header-controls-wrapper adalah anak langsung dari stack-header) */
+  /* #stack-header > .header-controls-wrapper {
+     display: none;
+  } */
+  /* Karena .header-controls-wrapper ada di dalam .mobile-menu-panel, kita atur .mobile-menu-panel untuk desktop */
+  /* Dan untuk mobile, kita atur .header-controls-wrapper di dalam .mobile-menu-panel */
+
   /* Gaya untuk kontrol di dalam panel mobile */
   .mobile-menu-panel .header-controls-wrapper {
-    display: flex; 
-    flex-direction: column; 
-    align-items: stretch; 
-    gap: 0.75rem; 
-    width: 100%; 
-    padding-top: 1rem; 
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+    width: 100%;
+    padding-top: 1rem; /* Jarak dari tombol close */
   }
-
-  /* .interactive-icon-bar {
-    gap: 0.4rem; 
-    justify-content: center;
-  } */
-
 }
 
 @media (max-width: 480px) {
   .title {
     font-size: 1.75rem;
   }
-  
-  /* .header-controls-wrapper {
-    justify-content: center; 
-  } */
-
-  /* .interactive-icon-bar {
-    flex-wrap: wrap; 
-  } */
 
   .popup {
     width: 95%;
