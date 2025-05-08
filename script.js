@@ -7,8 +7,29 @@ if ('serviceWorker' in navigator) {
   });
 }
 
+// Firebase SDK (gunakan versi yang sesuai, contoh v9+)
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
+import { getFirestore, collection, getDocs, onSnapshot, addDoc, doc, updateDoc, deleteDoc, query, orderBy, where } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
+
+// TODO: Ganti dengan konfigurasi Firebase proyek Anda
+const firebaseConfig = {
+  apiKey: "AIzaSyB-euXJz9b3HyfvjmG5tzu2wMqvbY3bH5E",
+  authDomain: "jadwal-pemakalah-akademik.firebaseapp.com",
+  projectId: "jadwal-pemakalah-akademik",
+  storageBucket: "jadwal-pemakalah-akademik.firebasestorage.app",
+  messagingSenderId: "230646165475",
+  appId: "1:230646165475:web:9f0ce777977eb2ddb07ad6",
+  measurementId: "G-DF2MZTSJER"
+};
+
+// Initialize Firebase
+const fbApp = initializeApp(firebaseConfig);
+const db = getFirestore(fbApp); // Dapatkan instance Firestore
+
 // app.js
-const dataByClass = {
+let dataByClass = {}; // Akan diisi dari Firestore, atau bisa juga tidak digunakan lagi jika struktur data utama adalah array
+let allSchedulesFromFirestore = []; // Untuk menyimpan semua jadwal dari Firestore
+/* const dataByClass = {
   "PTIQ": {
     "Sejarah Peradaban Islam": {
       "2025-04-21": { peserta: ["Noviyatul Badriyah", "Ibnatul Mardiah"], materi: "", time: "" },
@@ -273,7 +294,7 @@ const dataByClass = {
 }
 
 
-};
+}; */
 
 // Global Elements
 const elements = {
@@ -317,8 +338,9 @@ const utils = {
 
 // Calendar Manager
 const calendarManager = {
-  init: () => {
-    return new FullCalendar.Calendar(elements.calendarEl, {
+  calendarInstance: null,
+  init: (scheduleDocs) => {
+    calendarManager.calendarInstance = new FullCalendar.Calendar(elements.calendarEl, {
       initialView: 'dayGridMonth',
       locale: 'id', // Bahasa Indonesia
       headerToolbar: {
@@ -326,7 +348,7 @@ const calendarManager = {
         center: 'title',
         right: ''
       },
-      events: calendarManager.generateEvents(),
+      events: calendarManager.generateEventsFromFirestore(scheduleDocs),
       eventClick: (info) => {
         elements.popup.content.innerHTML = info.event.extendedProps.detail; // Langsung gunakan HTML dari detail
         elements.popup.overlay.style.display = 'block';
@@ -335,9 +357,10 @@ const calendarManager = {
     });
   },
 
-  generateEvents: () => {
-    return Object.entries(dataByClass).reduce((events, [className, subjects]) => {
-      Object.entries(subjects).forEach(([subject, dates]) => {
+  // Fungsi lama, bisa dihapus atau di-rename jika masih ingin referensi struktur lama
+  _generateEventsFromLocalStructure: (localData) => { 
+    return Object.entries(localData).reduce((events, [className, subjects]) => {
+      Object.entries(subjects).forEach(([subjectName, dates]) => { // Ganti 'subject' menjadi 'subjectName' agar tidak konflik
         Object.entries(dates).forEach(([date, entry]) => {
           events.push({
             title: `${entry.peserta.slice(0,2).join(', ')}${entry.peserta.length>2 ? ', ...' : ''}`,
@@ -350,13 +373,34 @@ const calendarManager = {
       });
       return events;
     }, []);
+  },
+
+  generateEventsFromFirestore: (firestoreDocs) => {
+    if (!firestoreDocs || firestoreDocs.length === 0) return [];
+    return firestoreDocs.map(doc => {
+      const data = doc.data();
+      return {
+        title: `${data.peserta.slice(0, 2).join(', ')}${data.peserta.length > 2 ? ', ...' : ''}`,
+        date: data.date, // Pastikan formatnya YYYY-MM-DD
+        extendedProps: {
+          detail: `<strong>Kelas:</strong> ${data.className}<br><strong>Mata Kuliah:</strong> ${data.subject}<br><strong>Waktu:</strong> ${data.time || 'N/A'}<br><strong>Peserta:</strong> ${data.peserta.join(', ')}<br><strong>Materi:</strong> ${data.materi || 'Belum ada materi'}`
+        }
+      };
+    });
+  },
+
+  rerenderEvents: (newFirestoreDocs) => {
+    if (calendarManager.calendarInstance) {
+      calendarManager.calendarInstance.removeAllEvents();
+      calendarManager.calendarInstance.addEventSource(calendarManager.generateEventsFromFirestore(newFirestoreDocs));
+    }
   }
 };
 
 // Data Manager
 const dataManager = {
-  getFilteredData: (selectedClass, selectedSubject, nameQuery) => {
-    const today = new Date().setHours(0,0,0,0);
+  _getFilteredDataFromLocalStructure: (selectedClass, selectedSubject, nameQuery) => { // Fungsi lama, di-rename
+    const today = new Date().setHours(0, 0, 0, 0);
     const classes = selectedClass === 'all' ? Object.keys(dataByClass) : [selectedClass];
     
     return classes.flatMap(className => {
@@ -371,6 +415,29 @@ const dataManager = {
           return hasMatch ? [{ className, subject, date, peserta: entry.peserta, materi: entry.materi, time: entry.time }] : [];
         });
       });
+    }).sort((a,b) => new Date(a.date) - new Date(b.date));
+  },
+
+  getFilteredDataFromFirestore: (schedules, selectedClass, selectedSubject, nameQuery) => {
+    if (!schedules || schedules.length === 0) return [];
+    const today = new Date().setHours(0,0,0,0);
+
+    return schedules.filter(doc => {
+      const data = doc.data();
+      const eventDate = new Date(data.date).setHours(0,0,0,0);
+      if (eventDate < today) return false;
+
+      if (selectedClass !== 'all' && data.className !== selectedClass) return false;
+      if (selectedSubject && data.subject !== selectedSubject) return false;
+
+      if (nameQuery) {
+        const queryText = nameQuery.toLowerCase();
+        return data.peserta.some(name => name.toLowerCase().includes(queryText));
+      }
+      return true;
+    }).map(doc => { // Transformasi ke format yang diharapkan renderResults
+        const data = doc.data();
+        return { ...data, id: doc.id }; // Sertakan ID dokumen jika perlu
     }).sort((a,b) => new Date(a.date) - new Date(b.date));
   },
 
@@ -473,7 +540,30 @@ const iconToggleManager = {
 // UI Controller
 const uiController = {
   deferredPrompt: null, // Untuk menyimpan event beforeinstallprompt
-  init: () => {
+  init: async () => {
+    // Tampilkan spinner loading awal
+    const initialSpinner = document.createElement('div');
+    initialSpinner.className = 'loading-spinner';
+    initialSpinner.style.display = 'block';
+    document.body.insertBefore(initialSpinner, document.querySelector('.container'));
+
+    try {
+      const schedulesCollection = collection(db, "schedules");
+      // Dengarkan perubahan real-time
+      onSnapshot(query(schedulesCollection, orderBy("date")), (querySnapshot) => {
+        allSchedulesFromFirestore = querySnapshot.docs; // Simpan dokumen mentah
+        uiController.processInitialData(allSchedulesFromFirestore);
+        if (initialSpinner.parentNode) initialSpinner.remove(); // Hapus spinner setelah data pertama diterima
+      }, (error) => {
+        console.error("Error fetching schedules: ", error);
+        elements.resultsDiv.innerHTML = "<p>Gagal memuat data jadwal. Silakan coba lagi nanti.</p>";
+        if (initialSpinner.parentNode) initialSpinner.remove();
+      });
+    } catch (error) {
+      console.error("Gagal setup listener Firestore:", error);
+      if (initialSpinner.parentNode) initialSpinner.remove();
+    }
+
     // Event Listeners
     elements.classSelect.addEventListener('change', uiController.handleClassChange);
     elements.subjectSelect.addEventListener('change', uiController.handleSearch);
@@ -492,17 +582,21 @@ const uiController = {
     document.getElementById('add-to-home').addEventListener('click', uiController.handlePWAInstall);
     // Load Saved Preferences
     const savedClass = localStorage.getItem('selectedClass');
-    if(savedClass) elements.classSelect.value = savedClass;
-    
-    // Initialize Calendar
-    const calendar = calendarManager.init();
-    calendar.render();
+    if(savedClass) elements.classSelect.value = savedClass;    
 
     // Initialize PWA
     uiController.initPWA();
 
     // Initialize Icon Toggles
     iconToggleManager.init();
+  },
+
+  processInitialData: (schedulesDocs) => {
+    // Initialize Calendar
+    calendarManager.init(schedulesDocs);
+    if(calendarManager.calendarInstance) calendarManager.calendarInstance.render();
+    uiController.updateSubjects();
+    uiController.handleSearch(); // Lakukan pencarian awal
   },
 
   handleClassChange: () => {
@@ -513,10 +607,21 @@ const uiController = {
 
   updateSubjects: () => {
     const selectedClass = elements.classSelect.value;
-    const subjects = selectedClass === 'all' ? 
-      [...new Set(Object.values(dataByClass).flatMap(c => Object.keys(c)))] : 
-      Object.keys(dataByClass[selectedClass] || {});
-    
+    let subjects = [];
+
+    if (allSchedulesFromFirestore.length > 0) {
+      if (selectedClass === 'all') {
+        subjects = [...new Set(allSchedulesFromFirestore.map(doc => doc.data().subject))];
+      } else {
+        subjects = [...new Set(
+          allSchedulesFromFirestore
+            .filter(doc => doc.data().className === selectedClass)
+            .map(doc => doc.data().subject)
+        )];
+      }
+      subjects.sort();
+    }
+        
     elements.subjectSelect.innerHTML = '<option value="">Semua Mata Kuliah</option>';
     subjects.forEach(subject => {
       elements.subjectSelect.innerHTML += `<option value="${subject}">${subject}</option>`;
@@ -538,12 +643,12 @@ const uiController = {
     elements.resultsDiv.appendChild(spinner);
 
     // Process Data
-    const filteredData = dataManager.getFilteredData(
+    const filteredData = dataManager.getFilteredDataFromFirestore(
+      allSchedulesFromFirestore,
       elements.classSelect.value,
       elements.subjectSelect.value,
       query
     );
-    
     // Render Results
     setTimeout(() => {
       spinner.remove();
