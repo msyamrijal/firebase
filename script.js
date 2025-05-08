@@ -209,13 +209,13 @@ const dataManager = {
         </div>
         <div class="card-group">
           <i class="fa-solid fa-users"></i>
-          ${peserta.map(name => 
+          ${peserta.map(name => { // Tambahkan kurung kurawal di sini
             const isHighlighted = query && name.toLowerCase().includes(query.toLowerCase());
             const nameDisplay = isHighlighted ? `<span class="highlight">${name}</span>` : name;
             // Escape quotes in data-value
             const escapedName = name.replace(/"/g, '&quot;');
             return `<span class="clickable-item" data-type="peserta" data-value="${escapedName}">${nameDisplay}</span>`;
-          }).join(', ')}
+          }).join(', ')} 
         </div>
         <div class="card-meta">
           <i class="fa-solid fa-lightbulb"></i>
