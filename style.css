@@ -79,21 +79,26 @@ body {
 #stack-header {
   position: sticky;
   top: 0;
-  background-color: var(--background); /* Match body background for seamless sticky effect */
-  padding: 1rem 0.5rem; /* Vertical and horizontal padding */
+  background-color: var(--background); 
+  padding: 0.75rem 1rem; /* Adjusted padding for a slightly slimmer bar */
   z-index: 950; /* Above content, below popups */
   box-shadow: 0 2px 4px rgba(74, 64, 58, 0.08); /* Subtle shadow when sticky */
   margin-bottom: 1.5rem; /* Space to content below when not sticky or at initial load */
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* Distribute space between icon bar and view toggles */
+  flex-wrap: wrap; /* Allow wrapping on very small screens */
+  gap: 1rem; /* Gap between items if they wrap */
 }
 
 /* Interactive Icon Bar for Controls */
 .interactive-icon-bar {
   display: flex;
-  justify-content: center; /* Center the icon wrappers */
+  /* justify-content: center; */ /* No longer needed as stack-header handles main alignment */
   gap: 0.75rem; /* Gap between icon wrappers */
   margin-top: 0; /* Was 1rem, now handled by stack-header padding */
-  margin-bottom: 1rem; /* Was 2rem, now space to view-toggle-buttons */
-  flex-wrap: wrap; /* Allow wrapping */
+  margin-bottom: 0; /* Was 1rem, removed as it's now inline with view-toggle-buttons */
+  flex-wrap: nowrap; /* Keep icons in a line, stack-header can wrap the whole group */
   align-items: center;
 }
 
@@ -182,7 +187,7 @@ button:focus-visible {
 .view-toggle-buttons {
   display: flex;
   justify-content: center;
-  gap: 0.75rem; /* Increased gap for better separation */
+  gap: 0.5rem; /* Adjusted gap */
   margin-top: 0; /* Was 1rem, now handled by icon-bar margin-bottom */
   margin-bottom: 0; /* Was 1.5rem, now handled by stack-header margin-bottom */
 }
@@ -420,9 +425,16 @@ button:focus-visible {
     font-size: 2rem;
   }
   
+  #stack-header {
+    justify-content: center; /* Center items when they might wrap */
+    padding: 0.75rem 0.5rem;
+  }
+
   .interactive-icon-bar {
     gap: 0.5rem;
+    justify-content: center; /* Center icons if they wrap within their own bar */
   }
+
 }
 
 @media (max-width: 480px) {
@@ -430,6 +442,10 @@ button:focus-visible {
     font-size: 1.75rem;
   }
   
+  .interactive-icon-bar {
+    flex-wrap: wrap; /* Allow individual icons to wrap on very small screens */
+  }
+
   .popup {
     width: 95%;
     padding: 1.5rem;
