@@ -281,37 +281,39 @@ const uiController = {
     initialSpinner.style.display = 'block';
     document.body.insertBefore(initialSpinner, document.querySelector('.container'));
     
+    let persistenceEnabled = false;
     try {
       // Aktifkan Firestore Offline Persistence
       await enablePersistence(db, { synchronizeTabs: true, cacheSizeBytes: CACHE_SIZE_UNLIMITED });
       console.log("Firestore offline persistence diaktifkan.");
-
-      try {
-        const schedulesCollection = collection(db, "schedules");
-        // Dengarkan perubahan real-time
-        onSnapshot(query(schedulesCollection, orderBy("date")), (querySnapshot) => {
-          allSchedulesFromFirestore = querySnapshot.docs; // Simpan dokumen mentah
-          uiController.processInitialData(allSchedulesFromFirestore);
-          if (initialSpinner.parentNode) initialSpinner.remove(); // Hapus spinner setelah data pertama diterima
-        }, (error) => {
-          console.error("Error fetching schedules: ", error);
-          elements.resultsDiv.innerHTML = "<p>Gagal memuat data jadwal. Silakan coba lagi nanti.</p>";
-          if (initialSpinner.parentNode) initialSpinner.remove();
-        });
-      } catch (error) {
-        console.error("Gagal setup listener Firestore:", error);
-        if (initialSpinner.parentNode) initialSpinner.remove();
-      }
-
+      persistenceEnabled = true;
     } catch (error) {
       if (error.code == 'failed-precondition') {
         console.warn("Firestore offline persistence gagal diaktifkan (mungkin sudah aktif di tab lain atau tidak didukung). Aplikasi akan tetap berjalan dengan mode online.");
-        // Lanjutkan dengan setup listener Firestore meskipun persistence gagal (untuk kasus multi-tab)
-        // Anda bisa mengulang logika onSnapshot di sini jika perlu, atau merestrukturisasi agar tidak duplikat.
-        // Untuk kesederhanaan, kita asumsikan onSnapshot di atas akan tetap mencoba.
+        // Anggap persistence sudah aktif di tab lain, jadi kita bisa melanjutkan
+        persistenceEnabled = true; 
       } else if (error.code == 'unimplemented') {
         console.warn("Browser ini tidak mendukung Firestore offline persistence.");
+        // Persistence tidak didukung, lanjutkan tanpa itu
       }
+      // Untuk error lain, kita mungkin ingin menghentikan atau menanganinya secara berbeda
+      // Namun, untuk saat ini, kita akan tetap mencoba mengambil data.
+    }
+
+    // Selalu coba siapkan listener Firestore, baik persistence berhasil atau tidak (kecuali ada error fatal)
+    try {
+      const schedulesCollection = collection(db, "schedules");
+      onSnapshot(query(schedulesCollection, orderBy("date")), (querySnapshot) => {
+        allSchedulesFromFirestore = querySnapshot.docs;
+        uiController.processInitialData(allSchedulesFromFirestore); // Panggil ini hanya ketika data benar-benar ada
+        if (initialSpinner.parentNode) initialSpinner.remove();
+      }, (error) => {
+        console.error("Error fetching schedules from Firestore: ", error);
+        elements.resultsDiv.innerHTML = "<p>Gagal memuat data jadwal. Silakan periksa koneksi Anda atau coba lagi nanti.</p>";
+        if (initialSpinner.parentNode) initialSpinner.remove();
+      });
+    } catch (error) {
+      console.error("Gagal setup listener Firestore (kesalahan lebih lanjut):", error);
       if (initialSpinner.parentNode) initialSpinner.remove();
     }
 
