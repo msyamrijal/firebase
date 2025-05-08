@@ -22,115 +22,92 @@
 </head>
 
 <body>
-  <div class="container">
-    <!-- Header Section -->
-    <header class="hero">      
-      <h1 class="title">Jadwal Pemakalah</h1>
-
-      <!-- Interactive Icon Bar for Controls -->
-      <div class="interactive-icon-bar">
-        <!-- Google Drive Icon Control -->
-        <div class="icon-control-wrapper" id="google-drive-control">
-          <button class="icon-trigger-btn" aria-label="Akses Google Drive" aria-expanded="false" aria-controls="driveDropdownContent">
-            <i class="fab fa-google-drive" aria-hidden="true"></i>
-          </button>
-          <div class="dropdown-panel" id="driveDropdownContent">
-            <select id="driveDropdown" aria-label="Pilih kelas untuk mengakses Google Drive">
-              <option value="">-- Pilih Kelas Drive --</option>
-              <option value="https://drive.google.com/drive/folders/12_mT3WcsuFeYOYfvuQnKjFH1B1dVgNyZ?usp=drive_link">
-                PKU B
-              </option>
-              <option value="https://drive.google.com/drive/folders/1La24Y-0DOPq5iJUUVg-UaF8gWEIsIqHQ?usp=drive_link">
-                PTIQ H
-              </option>
-              <option value="https://drive.google.com/drive/folders/1i83aR0pZj_lCFMaW6gSHAbXinvaQ3gFL?usp=drive_link">
-                PKUP
-              </option>
-            </select>
+  <div class="floating-menu">
+      <button class="menu-toggle" aria-label="Toggle Menu">
+          <span class="assistive-icon"></span>
+          <!-- SVG for Circular Text (optional, bisa ditambahkan nanti jika diinginkan) -->
+      </button>
+      <div class="menu-content">
+          <div class="search-container">
+              <input type="text" id="searchInput" placeholder="Cari Jadwal..." class="search-input">
           </div>
-        </div>
-
-        <!-- Class Selector -->
-        <div class="icon-control-wrapper" id="class-filter-control">
-          <button class="icon-trigger-btn" aria-label="Pilih Kelas" aria-expanded="false" aria-controls="classSelectContent">
-            <i class="fa-solid fa-graduation-cap" aria-hidden="true"></i>
-          </button>
-          <div class="dropdown-panel" id="classSelectContent">
-            <label for="class-select" class="sr-only">Pilih Kelas</label>
-            <select id="class-select" aria-label="Pilih kelas">
+          <select id="institutionFilter" class="institution-filter">
               <option value="all">Semua Kelas</option>
+              <!-- Opsi kelas akan diisi oleh JavaScript, mirip dengan class-select lama -->
               <option value="PTIQ">Kelas PTIQ H</option>
               <option value="PKU B">Kelas PKU B</option>
               <option value="PKUP">Kelas PKUP</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Subject Selector Icon Control -->
-        <div class="icon-control-wrapper" id="subject-filter-control">
-          <button class="icon-trigger-btn" aria-label="Pilih Mata Kuliah" aria-expanded="false" aria-controls="subjectSelectContent">
-            <i class="fa-solid fa-book" aria-hidden="true"></i>
-          </button>
-          <div class="dropdown-panel" id="subjectSelectContent">
-            <label for="subject-select" class="sr-only">Pilih Mata Kuliah</label>
-            <select id="subject-select" aria-label="Pilih mata kuliah">
+          </select>
+          <select id="subjectFilter" class="subject-filter">
               <option value="">Semua Mata Kuliah</option>
-            </select>
+              <!-- Opsi mata kuliah akan diisi oleh JavaScript, mirip dengan subject-select lama -->
+          </select>
+          <div class="menu-row">
+              <button id="themeToggle" class="theme-toggle" aria-label="Toggle Light/Dark Theme">
+                  <span class="theme-icon"></span> <!-- Icon akan dihandle CSS/JS -->
+              </button>
+              <div class="drive-container">
+                  <button id="driveToggleBtn" class="drive-toggle-btn" aria-label="Buka Link Drive">
+                      <i class="fab fa-google-drive"></i>
+                  </button>
+                  <div id="driveDropdown" class="drive-dropdown">
+                      <a href="https://drive.google.com/drive/folders/12_mT3WcsuFeYOYfvuQnKjFH1B1dVgNyZ?usp=drive_link" target="_blank" rel="noopener noreferrer" class="drive-link">PKU B</a>
+                      <a href="https://drive.google.com/drive/folders/1La24Y-0DOPq5iJUUVg-UaF8gWEIsIqHQ?usp=drive_link" target="_blank" rel="noopener noreferrer" class="drive-link">PTIQ H</a>
+                      <a href="https://drive.google.com/drive/folders/1i83aR0pZj_lCFMaW6gSHAbXinvaQ3gFL?usp=drive_link" target="_blank" rel="noopener noreferrer" class="drive-link">PKUP</a>
+                      <!-- Tambahkan link drive lain jika ada -->
+                  </div>
+              </div>
+              <div class="view-switcher">
+                  <button id="gridViewBtn" class="view-btn active" aria-label="Grid View">
+                      <i class="fas fa-th-large"></i>
+                  </button>
+                  <button id="calendarViewBtn" class="view-btn" aria-label="Calendar View">
+                      <i class="fas fa-calendar-day"></i>
+                  </button>
+              </div>
           </div>
-        </div>
-
-        <!-- Name Search Icon Control -->
-        <div class="icon-control-wrapper" id="name-search-control">
-          <button class="icon-trigger-btn" aria-label="Cari Nama" aria-expanded="false" aria-controls="searchNameInputWrapper">
-            <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
-          </button>
-          <div class="input-panel" id="searchNameInputWrapper">
-            <label for="search-name" class="sr-only">Cari Nama</label>
-            <input type="text" 
-                   id="search-name" 
-                   placeholder="Cari nama..."
-                   aria-label="Input pencarian nama">
-          </div>
-        </div>
       </div>
-      
-      <!-- Calendar Container -->
-      <div id="calendar"></div>
-    </header>
-
-    <!-- Results Section -->
-    <main class="results" id="results" role="region" aria-live="polite">
-      <!-- Results will be dynamically inserted here -->
-    </main>
-
-    <!-- Event Detail Popup -->
-    <div id="overlay" class="overlay" role="dialog" aria-modal="true" onclick="uiController.closePopup()"></div>
-    <div id="popup" class="popup" role="alertdialog" aria-labelledby="popupTitle">
-      <h2 id="popupTitle" class="sr-only">Detail Jadwal</h2>
-      <button class="close-btn" 
-              onclick="uiController.closePopup()" 
-              aria-label="Tutup popup">
-        &times;
-      </button>
-      <div id="popup-content" tabindex="-1"></div>
-    </div>
   </div>
 
-  <!-- PWA Install Prompt -->
-  <div id="add-to-home-popup" class="add-to-home-popup" role="dialog" aria-modal="true">
-    <div class="add-to-home-content">
-      <button id="closePwaInstallPromptBtn" 
-              class="close-btn" 
-              aria-label="Tutup popup instalasi">
-        &times;
-      </button>
-      <p id="pwa-install-text">Tambahkan situs ini ke layar utama untuk akses cepat.</p>
-      <button id="add-to-home" 
-              class="add-btn" 
-              aria-label="Tambahkan ke layar utama">
-        Tambahkan ke Layar Utama
-      </button>
-    </div>
+  <main class="main-content container">
+      <div class="loading" id="loading"> <!-- ID loading disesuaikan dengan script.js Anda -->
+          <div class="spinner"></div>
+          <p>Memuat Jadwal...</p>
+      </div>
+
+      <!-- Calendar Container (disembunyikan awalnya jika grid view default) -->
+      <section id="calendarView" class="calendar-view view-container">
+          <div id="calendar"></div> <!-- ID calendar dari script.js Anda -->
+      </section>
+      
+      <!-- Results Section (Grid View) -->
+      <section id="scheduleGrid" class="schedule-grid view-container active" aria-live="polite">
+           <!-- Results will be dynamically inserted here by script.js (elements.resultsDiv) -->
+           <!-- Kita akan membiarkan script.js yang mengisi ini, tapi pastikan ID-nya sesuai -->
+      </section>
+
+      <div class="empty-state" id="emptyState"> <!-- ID emptyState dari contoh -->
+          <i class="fas fa-ghost empty-icon"></i>
+          <h3>Oops! Jadwal tidak ditemukan</h3>
+          <p>Coba kata kunci atau filter yang berbeda.</p>
+      </div>
+  </main>
+
+  <!-- Modal (Popup Detail Jadwal) -->
+  <div class="modal" id="genericModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modal-overlay" onclick="uiController.closePopup()"></div> <!-- ID dari script.js Anda -->
+      <div class="modal-content">
+          <button class="close-modal" onclick="uiController.closePopup()" aria-label="Close modal">&times;</button>
+          <h3 id="modalTitle" class="modal-title sr-only">Detail Jadwal</h3>
+          <div class="modal-body" id="modalBody"></div> <!-- ID modalBody dari contoh, sesuaikan dengan popup-content Anda -->
+      </div>
+  </div>
+
+  <!-- Custom Install Prompt Popup (PWA) -->
+  <div id="installPopup" class="install-popup hidden"> <!-- ID installPopup dari contoh -->
+      <p>Pasang aplikasi JadwalKu untuk akses lebih cepat!</p>
+      <button id="installBtn" class="install-btn">Install</button> <!-- ID installBtn dari contoh -->
+      <button id="dismissInstallBtn" class="dismiss-btn" aria-label="Tutup">&times;</button> <!-- ID dismissInstallBtn dari contoh -->
   </div>
 
   <!-- External Dependencies -->
