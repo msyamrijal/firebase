@@ -9,7 +9,7 @@ if ('serviceWorker' in navigator) {
 
 // Firebase SDK (gunakan versi yang sesuai, contoh v9+)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
-import { getFirestore, collection, getDocs, onSnapshot, addDoc, doc, updateDoc, deleteDoc, query, orderBy, where, enablePersistence, CACHE_SIZE_UNLIMITED } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
+import { getFirestore, collection, getDocs, onSnapshot, addDoc, doc, updateDoc, deleteDoc, query, orderBy, where, enableIndexedDbPersistence, CACHE_SIZE_UNLIMITED } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
 
 // TODO: Ganti dengan konfigurasi Firebase proyek Anda
 const firebaseConfig = {
@@ -290,7 +290,7 @@ const uiController = {
     let persistenceEnabled = false;
     try {
       // Aktifkan Firestore Offline Persistence
-      await enablePersistence(db, { synchronizeTabs: true, cacheSizeBytes: CACHE_SIZE_UNLIMITED });
+      await enableIndexedDbPersistence(db, { synchronizeTabs: true, cacheSizeBytes: CACHE_SIZE_UNLIMITED });
       console.log("Attempted to enable Firestore offline persistence.");
       console.log("Firestore offline persistence diaktifkan.");
       persistenceEnabled = true;
