@@ -468,7 +468,7 @@ button:focus-visible {
   }
   
   .header-controls-wrapper {
-    justify-content: flex-start; /* Ratakan kontrol ke kiri jika membungkus */
+    justify-content: center; /* Tetap pusatkan jika membungkus atau muat satu baris */
   }
 
   .interactive-icon-bar {
