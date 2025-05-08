@@ -212,9 +212,24 @@ const dataManager = {
 
   renderResults: (results, query) => {
     console.log("dataManager.renderResults - Input results:", results, "Query:", query);
-    elements.scheduleGrid.innerHTML = ''; // Menggunakan scheduleGrid
-    elements.emptyState.classList.toggle('active', results.length === 0 && query);
+    if (!elements.scheduleGrid || !elements.emptyState) {
+        console.error("Elemen scheduleGrid atau emptyState tidak ditemukan!");
+        return;
+    }
+    elements.scheduleGrid.innerHTML = ''; 
 
+    if (results.length === 0) {
+      elements.emptyState.classList.add('active');
+      if (query) {
+        elements.emptyState.querySelector('h3').textContent = "Oops! Jadwal tidak ditemukan";
+        elements.emptyState.querySelector('p').textContent = "Coba kata kunci atau filter yang berbeda.";
+      } else {
+        elements.emptyState.querySelector('h3').textContent = "Belum Ada Jadwal";
+        elements.emptyState.querySelector('p').textContent = "Tidak ada jadwal yang tersedia saat ini atau cocok dengan filter Anda.";
+      }
+    } else {
+      elements.emptyState.classList.remove('active');
+    }
     results.forEach((scheduleData) => { // scheduleData sudah termasuk id dari getFilteredDataFromFirestore
       const { className, subject, date, peserta, materi, time, id } = scheduleData; // Destructure untuk kejelasan
       const card = document.createElement('div');
@@ -298,23 +313,25 @@ const uiController = {
       console.log("Setting up Firestore onSnapshot listener for 'schedules' collection...");
       onSnapshot(query(schedulesCollection, orderBy("date")), (querySnapshot) => {
         console.log("Firestore snapshot diterima. Jumlah dokumen:", querySnapshot.size);
-        allSchedulesFromFirestore = querySnapshot.docs;
-        if (querySnapshot.empty) {
-          console.warn("Tidak ada dokumen jadwal yang ditemukan di Firestore.");
-          if(elements.scheduleGrid) elements.scheduleGrid.innerHTML = "<p>Tidak ada jadwal yang tersedia saat ini.</p>";
+        if (querySnapshot.metadata.hasPendingWrites) {
+            console.log("Data lokal (pending writes) diterima.");
+        } else {
+            console.log("Data dari server diterima.");
         }
+        allSchedulesFromFirestore = querySnapshot.docs;
+        // Penanganan empty state sekarang terpusat di renderResults
+        // if (querySnapshot.empty) {
+        //   console.warn("Tidak ada dokumen jadwal yang ditemukan di Firestore.");
+        // }
         // Pastikan allSchedulesFromFirestore adalah array sebelum dikirim
         uiController.processInitialData(allSchedulesFromFirestore); // Panggil ini hanya ketika data benar-benar ada
-        // Elemen loadingIndicator sudah dihapus dari HTML dan referensi JS sebelumnya
       }, (error) => {
         console.error("Firestore onSnapshot error:", error);
         console.error("Error fetching schedules from Firestore: ", error);
         if(elements.scheduleGrid) elements.scheduleGrid.innerHTML = "<p>Gagal memuat data jadwal. Silakan periksa koneksi Anda atau coba lagi nanti.</p>";
-        // if (elements.loadingIndicator) elements.loadingIndicator.classList.remove('active'); // Dihapus
       });
     } catch (error) {
       console.error("Gagal setup listener Firestore (kesalahan lebih lanjut):", error);
-      // if (elements.loadingIndicator) elements.loadingIndicator.classList.remove('active'); // Dihapus
     }
 
     // Event Listeners untuk UI Utama
@@ -351,6 +368,7 @@ const uiController = {
 
   processInitialData: (schedulesDocs) => {
     console.log("Memproses data awal. Jumlah dokumen diterima:", schedulesDocs ? schedulesDocs.length : 'null/undefined');
+    console.log("Data yang diterima di processInitialData:", schedulesDocs.map(doc => ({id: doc.id, ...doc.data()})));
     // if (elements.loadingIndicator) elements.loadingIndicator.classList.remove('active'); // Dihapus
 
     // Initialize Calendar
@@ -409,6 +427,7 @@ const uiController = {
     console.log("handleSearch dipanggil.");
     const query = elements.searchInput ? elements.searchInput.value.trim().toLowerCase() : "";
     
+    console.log("Filter saat ini: Kelas=", elements.institutionFilter ? elements.institutionFilter.value : 'N/A', "Subjek=", elements.subjectFilter ? elements.subjectFilter.value : 'N/A');
     // if (elements.loadingIndicator) elements.loadingIndicator.classList.add('active'); // Dihapus
     if (elements.scheduleGrid) elements.scheduleGrid.innerHTML = ''; 
 
@@ -421,6 +440,7 @@ const uiController = {
       query
     );
     // Render Results
+    console.log("Data setelah difilter (sebelum render):", filteredData);
     setTimeout(() => {
       // if (elements.loadingIndicator) elements.loadingIndicator.classList.remove('active'); // Dihapus
       dataManager.renderResults(filteredData, query);
