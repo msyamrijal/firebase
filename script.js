@@ -56,6 +56,12 @@ const elements = {
   pwaPopup: document.getElementById('installPopup'), // Sebelumnya add-to-home-popup
   installPwaBtn: document.getElementById('installBtn'),
   dismissPwaBtn: document.getElementById('dismissInstallBtn'),
+  // Untuk animasi menu
+  welcomeTextCircle: null, // Akan dibuat jika ada di HTML contoh
+  // Untuk draggable menu
+  isDraggingMenu: false,
+  menuOffsetX: 0,
+  menuOffsetY: 0,
 };
 
 // Utility Functions
@@ -240,6 +246,7 @@ const dataManager = {
 const uiController = {
   deferredPrompt: null, // Untuk menyimpan event beforeinstallprompt
   currentView: 'grid', // 'grid' or 'calendar'
+  isMenuInitialized: false,
   init: async () => {
     // Tampilkan spinner loading awal
     if (elements.loadingIndicator) elements.loadingIndicator.classList.add('active');
@@ -279,7 +286,10 @@ const uiController = {
         }
         // Pastikan allSchedulesFromFirestore adalah array sebelum dikirim
         uiController.processInitialData(allSchedulesFromFirestore); // Panggil ini hanya ketika data benar-benar ada
-        if (initialSpinner.parentNode) initialSpinner.remove();
+        // Menghapus initialSpinner yang tidak didefinisikan, kita gunakan loadingIndicator
+        if (elements.loadingIndicator && elements.loadingIndicator.classList.contains('active')) {
+            // Dihapus di processInitialData atau di sini jika processInitialData tidak selalu dipanggil
+        }
       }, (error) => {
         console.error("Firestore onSnapshot error:", error);
         console.error("Error fetching schedules from Firestore: ", error);
@@ -291,7 +301,7 @@ const uiController = {
       if (elements.loadingIndicator) elements.loadingIndicator.classList.remove('active');
     }
 
-    // Event Listeners
+    // Event Listeners untuk UI Utama
     if (elements.menuToggle) elements.menuToggle.addEventListener('click', uiController.toggleMenu);
     if (elements.searchInput) elements.searchInput.addEventListener('input', utils.debounce(uiController.handleSearch, 300));
     if (elements.institutionFilter) elements.institutionFilter.addEventListener('change', uiController.handleClassChange);
@@ -317,6 +327,10 @@ const uiController = {
     const savedClass = localStorage.getItem('selectedClass');
     if(savedClass && elements.institutionFilter) elements.institutionFilter.value = savedClass;
     uiController.loadTheme(); // Load saved theme
+    uiController.initPWA(); // Pindahkan inisialisasi PWA ke sini
+    uiController.initFloatingMenu(); // Inisialisasi fitur menu
+
+    uiController.switchView(localStorage.getItem('lastView') || 'grid'); // Load last view or default to grid
   },
 
   processInitialData: (schedulesDocs) => {
@@ -340,9 +354,7 @@ const uiController = {
     uiController.updateSubjects();
     uiController.handleSearch(); // Lakukan pencarian awal
 
-    // Initialize PWA & Icon Toggles after data is processed and UI is ready
-    uiController.initPWA();
-    iconToggleManager.init();
+    // iconToggleManager.init(); // Ini sudah tidak digunakan
   },
 
   handleClassChange: () => {
@@ -400,6 +412,9 @@ const uiController = {
       if (uiController.currentView === 'calendar' && calendarManager.calendarInstance) {
           calendarManager.rerenderEvents(filteredData); // Atau allSchedulesFromFirestore jika kalender tidak difilter nama
       }
+      if (results.length === 0 && !query) {
+        elements.emptyState.classList.remove('active'); // Sembunyikan empty state jika tidak ada query dan tidak ada hasil (misal, data awal kosong)
+      }
     }, 300);
   },
 
@@ -447,6 +462,7 @@ const uiController = {
       if (elements.calendarViewBtn) elements.calendarViewBtn.classList.remove('active');
       uiController.handleSearch(); // Refresh grid view
     } else if (view === 'calendar') {
+      if (elements.emptyState) elements.emptyState.classList.remove('active'); // Sembunyikan empty state di tampilan kalender
       if (elements.scheduleGrid) elements.scheduleGrid.classList.remove('active');
       if (elements.calendarView) elements.calendarView.classList.add('active');
       if (elements.gridViewBtn) elements.gridViewBtn.classList.remove('active');
@@ -456,6 +472,7 @@ const uiController = {
         setTimeout(() => calendarManager.calendarInstance.render(), 0); // Force rerender
       }
     }
+    localStorage.setItem('lastView', view);
   },
 
   // handleDriveSelect: function(event) { // Fungsi ini tidak lagi relevan karena drive dropdown adalah link
@@ -504,7 +521,91 @@ const uiController = {
       uiController.deferredPrompt = null; // Kosongkan setelah digunakan
     }
     if (elements.pwaPopup) elements.pwaPopup.classList.add('hidden');
-  }
+  },
+
+  // --- Fitur dari gemini - polos ---
+  initFloatingMenu: () => {
+    if (!elements.floatingMenu || !elements.menuToggle) return;
+
+    // Welcome Animation (jika ini adalah kunjungan pertama atau logika tertentu)
+    // Untuk contoh ini, kita akan jalankan sekali saat load jika menu belum diinisialisasi
+    if (!uiController.isMenuInitialized && !localStorage.getItem('menuMoved')) {
+      elements.floatingMenu.classList.add('welcome-animation');
+      elements.menuToggle.innerHTML = `<span class="assistive-icon"></span>
+        <svg class="welcome-text-circle" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <path id="textPathCircle" d="M 50, 50 m -37, 0 a 37,37 0 1,1 74,0 a 37,37 0 1,1 -74,0" fill="none"/>
+          <text dy="-2">
+            <textPath xlink:href="#textPathCircle" startOffset="50%" text-anchor="middle">
+              MENU DISINI
+            </textPath>
+          </text>
+        </svg>`;
+      elements.welcomeTextCircle = elements.floatingMenu.querySelector('.welcome-text-circle');
+
+      setTimeout(() => {
+        elements.floatingMenu.classList.remove('welcome-animation');
+        if (elements.welcomeTextCircle) elements.welcomeTextCircle.style.opacity = '0';
+        // Kembalikan ke posisi default atau yang tersimpan
+        uiController.positionMenu();
+        if (elements.menuToggle.querySelector('svg')) elements.menuToggle.querySelector('svg').remove(); // Hapus SVG teks
+      }, 3000); // Durasi animasi selamat datang
+    } else {
+      uiController.positionMenu(); // Langsung posisikan jika bukan animasi welcome
+    }
+
+    // Draggable Menu
+    elements.menuToggle.addEventListener('mousedown', (e) => {
+      if (e.target.closest('.menu-content')) return; // Jangan drag jika klik di dalam konten menu
+      elements.isDraggingMenu = true;
+      elements.floatingMenu.style.transition = 'none'; // Matikan transisi saat drag
+      const rect = elements.floatingMenu.getBoundingClientRect();
+      elements.menuOffsetX = e.clientX - rect.left;
+      elements.menuOffsetY = e.clientY - rect.top;
+      document.body.style.userSelect = 'none'; // Cegah seleksi teks saat drag
+    });
+
+    document.addEventListener('mousemove', (e) => {
+      if (!elements.isDraggingMenu) return;
+      let newX = e.clientX - elements.menuOffsetX;
+      let newY = e.clientY - elements.menuOffsetY;
+
+      // Batasi pergerakan menu di dalam viewport
+      const menuRect = elements.floatingMenu.getBoundingClientRect();
+      newX = Math.max(0, Math.min(newX, window.innerWidth - menuRect.width));
+      newY = Math.max(0, Math.min(newY, window.innerHeight - menuRect.height));
+
+      elements.floatingMenu.style.left = `${newX}px`;
+      elements.floatingMenu.style.top = `${newY}px`;
+      elements.floatingMenu.style.right = 'auto'; // Override CSS jika ada
+      elements.floatingMenu.style.bottom = 'auto'; // Override CSS jika ada
+    });
+
+    document.addEventListener('mouseup', () => {
+      if (elements.isDraggingMenu) {
+        elements.isDraggingMenu = false;
+        elements.floatingMenu.style.transition = ''; // Aktifkan kembali transisi
+        document.body.style.userSelect = '';
+        // Simpan posisi menu
+        localStorage.setItem('menuPosition', JSON.stringify({
+          left: elements.floatingMenu.style.left,
+          top: elements.floatingMenu.style.top
+        }));
+        localStorage.setItem('menuMoved', 'true'); // Tandai bahwa menu pernah digeser
+      }
+    });
+    uiController.isMenuInitialized = true;
+  },
+
+  positionMenu: () => {
+    const savedPosition = localStorage.getItem('menuPosition');
+    if (savedPosition && elements.floatingMenu) {
+      const pos = JSON.parse(savedPosition);
+      elements.floatingMenu.style.left = pos.left;
+      elements.floatingMenu.style.top = pos.top;
+      elements.floatingMenu.style.right = 'auto';
+      elements.floatingMenu.style.bottom = 'auto';
+    } // Jika tidak ada, biarkan CSS default yang mengatur
+  },
 };
 
 // Initialize Application
