@@ -25,6 +25,7 @@ const firebaseConfig = {
 // Initialize Firebase
 const fbApp = initializeApp(firebaseConfig);
 const db = getFirestore(fbApp); // Dapatkan instance Firestore
+console.log("Firebase Initialized. Firestore instance:", db ? "OK" : "Failed");
 
 // app.js
 let dataByClass = {}; // Akan diisi dari Firestore, atau bisa juga tidak digunakan lagi jika struktur data utama adalah array
@@ -110,6 +111,7 @@ const calendarManager = {
   },
 
   generateEventsFromFirestore: (firestoreDocs) => {
+    console.log("calendarManager.generateEventsFromFirestore - Input docs:", firestoreDocs);
     if (!firestoreDocs || firestoreDocs.length === 0) return [];
     return firestoreDocs.map(doc => {
       const data = doc.data();
@@ -121,6 +123,7 @@ const calendarManager = {
         }
       };
     });
+    // console.log("calendarManager.generateEventsFromFirestore - Output events:", generatedEvents); // Bisa di-uncomment jika perlu
   },
 
   rerenderEvents: (newFirestoreDocs) => {
@@ -153,6 +156,7 @@ const dataManager = {
   },
 
   getFilteredDataFromFirestore: (schedules, selectedClass, selectedSubject, nameQuery) => {
+    console.log("dataManager.getFilteredDataFromFirestore - Input schedules:", schedules, "Class:", selectedClass, "Subject:", selectedSubject, "Query:", nameQuery);
     if (!schedules || schedules.length === 0) return [];
     const today = new Date().setHours(0,0,0,0);
 
@@ -172,10 +176,12 @@ const dataManager = {
     }).map(doc => { // Transformasi ke format yang diharapkan renderResults
         const data = doc.data();
         return { ...data, id: doc.id }; // Sertakan ID dokumen jika perlu
-    }).sort((a,b) => new Date(a.date) - new Date(b.date));
+    }).sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime()); // Pastikan perbandingan tanggal benar
+    // console.log("dataManager.getFilteredDataFromFirestore - Output filteredData:", filteredData); // Bisa di-uncomment
   },
 
   renderResults: (results, query) => {
+    console.log("dataManager.renderResults - Input results:", results, "Query:", query);
     elements.resultsDiv.innerHTML = '';
     results.forEach(({ className, subject, date, peserta, materi, time }) => {
       const card = document.createElement('div');
@@ -285,6 +291,7 @@ const uiController = {
     try {
       // Aktifkan Firestore Offline Persistence
       await enablePersistence(db, { synchronizeTabs: true, cacheSizeBytes: CACHE_SIZE_UNLIMITED });
+      console.log("Attempted to enable Firestore offline persistence.");
       console.log("Firestore offline persistence diaktifkan.");
       persistenceEnabled = true;
     } catch (error) {
@@ -295,6 +302,8 @@ const uiController = {
       } else if (error.code == 'unimplemented') {
         console.warn("Browser ini tidak mendukung Firestore offline persistence.");
         // Persistence tidak didukung, lanjutkan tanpa itu
+      } else {
+        console.error("Error enabling persistence:", error);
       }
       // Untuk error lain, kita mungkin ingin menghentikan atau menanganinya secara berbeda
       // Namun, untuk saat ini, kita akan tetap mencoba mengambil data.
@@ -303,6 +312,7 @@ const uiController = {
     // Selalu coba siapkan listener Firestore, baik persistence berhasil atau tidak (kecuali ada error fatal)
     try {
       const schedulesCollection = collection(db, "schedules");
+      console.log("Setting up Firestore onSnapshot listener for 'schedules' collection...");
       onSnapshot(query(schedulesCollection, orderBy("date")), (querySnapshot) => {
         console.log("Firestore snapshot diterima. Jumlah dokumen:", querySnapshot.size);
         allSchedulesFromFirestore = querySnapshot.docs;
@@ -310,6 +320,7 @@ const uiController = {
           console.warn("Tidak ada dokumen jadwal yang ditemukan di Firestore.");
           elements.resultsDiv.innerHTML = "<p>Tidak ada jadwal yang tersedia saat ini.</p>";
         }
+        // Pastikan allSchedulesFromFirestore adalah array sebelum dikirim
         uiController.processInitialData(allSchedulesFromFirestore); // Panggil ini hanya ketika data benar-benar ada
         if (initialSpinner.parentNode) initialSpinner.remove();
       }, (error) => {
@@ -349,6 +360,10 @@ const uiController = {
     console.log("Memproses data awal. Jumlah dokumen diterima:", schedulesDocs.length);
     // Initialize Calendar
     calendarManager.init(schedulesDocs);
+    if (!calendarManager.calendarInstance) {
+        console.error("Calendar instance GAGAL diinisialisasi di processInitialData.");
+        return;
+    }
     if(calendarManager.calendarInstance) calendarManager.calendarInstance.render();
     uiController.updateSubjects();
     uiController.handleSearch(); // Lakukan pencarian awal
@@ -367,6 +382,7 @@ const uiController = {
   updateSubjects: () => {
     const selectedClass = elements.classSelect.value;
     let subjects = [];
+    console.log("updateSubjects - allSchedulesFromFirestore:", allSchedulesFromFirestore);
 
     if (allSchedulesFromFirestore.length > 0) {
       if (selectedClass === 'all') {
@@ -388,6 +404,7 @@ const uiController = {
   },
 
   handleSearch: () => {
+    console.log("handleSearch dipanggil.");
     const query = elements.nameInput.value.trim().toLowerCase();
     const showCalendar = !query;
     
@@ -401,6 +418,7 @@ const uiController = {
     elements.resultsDiv.innerHTML = '';
     elements.resultsDiv.appendChild(spinner);
 
+    console.log("handleSearch - allSchedulesFromFirestore sebelum filter:", allSchedulesFromFirestore);
     // Process Data
     const filteredData = dataManager.getFilteredDataFromFirestore(
       allSchedulesFromFirestore,
