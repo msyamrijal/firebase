@@ -1092,3 +1092,14 @@ body {
 .menu-toggle:active {
   cursor: grabbing !important;
 }
+/* Tambahkan ke c:\Users\msyam\OneDrive\Alhamdulillah\Desktop\firebase\style.css jika perlu */
+.participant-tag.highlight {
+  background-color: var(--color-accent); /* Atau warna highlight lain */
+  color: var(--color-surface);
+  font-weight: 600;
+}
+
+.floating-menu.dragging .menu-toggle {
+  cursor: grabbing !important;
+  /* Mungkin efek visual lain saat dragging */
+}

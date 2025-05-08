@@ -47,7 +47,7 @@ const elements = {
   scheduleGrid: document.getElementById('scheduleGrid'), // Sebelumnya resultsDiv
   calendarEl: document.getElementById('calendar'),
   calendarView: document.getElementById('calendarView'),
-  loadingIndicator: document.getElementById('loading'),
+  // loadingIndicator: document.getElementById('loading'), // Dihapus karena elemen HTML-nya dihapus
   emptyState: document.getElementById('emptyState'),
   popup: {
     modal: document.getElementById('genericModal'),
@@ -101,9 +101,23 @@ const calendarManager = {
       },
       events: calendarManager.generateEventsFromFirestore(scheduleDocs),
       eventClick: (info) => {
+        // Menggunakan struktur modal baru dan data asli dari event
+        const { className, subject, date, peserta, materi, time } = info.event.extendedProps.originalData;
+        const modalContent = `
+            <div class="modal-item">
+                <div class="card-header">
+                    <h3 class="course-title">${subject}</h3>
+                    <span class="date-display">${utils.formatDate(date)}</span>
+                </div>
+                <p class="institute">${className}</p>
+                ${materi ? `<div class="discussion-topic"><strong>Materi:</strong> ${materi}</div>` : ''}
+                ${time ? `<p class="card-time"><i class="fas fa-clock"></i> ${time}</p>` : ''}
+                <div class="participants"><strong>Peserta:</strong> ${peserta.map(name => `<span class="participant-tag">${name}</span>`).join('')}</div>
+            </div>
+        `;
         // Menggunakan struktur modal baru
-        elements.popup.modalBody.innerHTML = info.event.extendedProps.detail;
-        elements.popup.modal.classList.add('active');
+        elements.popup.modalBody.innerHTML = modalContent;
+        if (elements.popup.modal) elements.popup.modal.classList.add('active');
       }
     });
   },
@@ -135,7 +149,8 @@ const calendarManager = {
         title: `${data.peserta.slice(0, 2).join(', ')}${data.peserta.length > 2 ? ', ...' : ''}`,
         date: data.date, // Pastikan formatnya YYYY-MM-DD
         extendedProps: {
-          detail: `<strong>Kelas:</strong> ${data.className}<br><strong>Mata Kuliah:</strong> ${data.subject}<br><strong>Waktu:</strong> ${data.time || 'N/A'}<br><strong>Peserta:</strong> ${data.peserta.join(', ')}<br><strong>Materi:</strong> ${data.materi || 'Belum ada materi'}`
+          // Simpan data asli untuk digunakan di modal
+          originalData: { ...data, id: doc.id }
         }
       };
     });
@@ -201,39 +216,50 @@ const dataManager = {
     elements.scheduleGrid.innerHTML = ''; // Menggunakan scheduleGrid
     elements.emptyState.classList.toggle('active', results.length === 0 && query);
 
-    results.forEach(({ className, subject, date, peserta, materi, time }) => {
+    results.forEach((scheduleData) => { // scheduleData sudah termasuk id dari getFilteredDataFromFirestore
+      const { className, subject, date, peserta, materi, time, id } = scheduleData; // Destructure untuk kejelasan
       const card = document.createElement('div');
       card.className = 'schedule-card'; // Sesuai dengan CSS baru
-      // Struktur HTML kartu disesuaikan dengan gemini - polos (jika berbeda)
-      // Asumsi struktur kartu dari gemini - polos:
+      // Struktur HTML kartu disesuaikan dengan kelas di style.css
       card.innerHTML = `
         <div class="card-header">
-            <h3 class="card-title">${subject}</h3>
-            <span class="card-class">${className}</span>
+            <h3 class="course-title clickable" data-schedule-id="${id}">${subject}</h3>
+            <span class="date-display clickable" data-schedule-id="${id}">${utils.formatDate(date)}</span>
         </div>
-        <div class="card-body">
-            <p class="card-date"><i class="fas fa-calendar-alt"></i> ${utils.formatDate(date)}</p>
-            <p class="card-time"><i class="fas fa-clock"></i> ${time || 'N/A'}</p>
-            <p class="card-presenters"><i class="fas fa-users"></i> 
+        <p class="institute clickable" data-schedule-id="${id}">${className}</p>
+        ${materi ? `<div class="discussion-topic clickable" data-schedule-id="${id}"><strong>Materi:</strong> ${materi}</div>` : ''}
+        ${time ? `<p class="card-time clickable" data-schedule-id="${id}"><i class="fas fa-clock"></i> ${time}</p>` : ''}
+        <div class="participants">
                 ${peserta.map(name => 
-                    query && name.toLowerCase().includes(query.toLowerCase()) ? 
-                    `<span class="highlight">${name}</span>` : name
-                ).join(', ')}
-            </p>
-            ${materi ? `<p class="card-topic"><i class="fas fa-book-open"></i> ${materi}</p>` : ''}
+                    `<span class="participant-tag ${query && name.toLowerCase().includes(query.toLowerCase()) ? 'highlight' : ''}">${name}</span>`
+                ).join('')}
         </div>
-        <div class="card-footer">
-            <button class="details-btn" aria-label="Lihat Detail ${subject}">Detail</button>
-        </div>
+        <!-- Tombol detail bisa dihilangkan jika seluruh kartu clickable -->
       `;
-      // Tambahkan event listener untuk tombol detail di kartu jika ada
-      const detailsBtn = card.querySelector('.details-btn');
-      if (detailsBtn) {
-        detailsBtn.addEventListener('click', () => {
-            elements.popup.modalBody.innerHTML = `<strong>Kelas:</strong> ${className}<br><strong>Mata Kuliah:</strong> ${subject}<br><strong>Waktu:</strong> ${time || 'N/A'}<br><strong>Peserta:</strong> ${peserta.join(', ')}<br><strong>Materi:</strong> ${materi || 'Belum ada materi'}`;
-            elements.popup.modal.classList.add('active');
+      
+      // Membuat seluruh kartu (atau bagian tertentu) clickable untuk membuka modal
+      card.querySelectorAll('.clickable').forEach(clickableElement => {
+        clickableElement.addEventListener('click', () => {
+            // Menggunakan scheduleData yang ditangkap oleh loop untuk modal
+            const modalContent = `
+              <div class="modal-item">
+                <div class="card-header">
+                    <h3 class="course-title">${scheduleData.subject}</h3>
+                    <span class="date-display">${utils.formatDate(scheduleData.date)}</span>
+                </div>
+                <p class="institute">${scheduleData.className}</p>
+                ${scheduleData.materi ? `<div class="discussion-topic"><strong>Materi:</strong> ${scheduleData.materi}</div>` : ''}
+                ${scheduleData.time ? `<p class="card-time"><i class="fas fa-clock"></i> ${scheduleData.time}</p>` : ''}
+                <div class="participants">
+                    <strong>Peserta:</strong>
+                    ${scheduleData.peserta.map(name => `<span class="participant-tag">${name}</span>`).join('')}
+                </div>
+              </div>
+            `;
+            elements.popup.modalBody.innerHTML = modalContent;
+            if (elements.popup.modal) elements.popup.modal.classList.add('active');
         });
-      }
+      });
       elements.scheduleGrid.appendChild(card);
     });
   }
@@ -249,7 +275,7 @@ const uiController = {
   isMenuInitialized: false,
   init: async () => {
     // Tampilkan spinner loading awal
-    if (elements.loadingIndicator) elements.loadingIndicator.classList.add('active');
+    // if (elements.loadingIndicator) elements.loadingIndicator.classList.add('active'); // Dihapus
     
     let persistenceEnabled = false;
     try {
@@ -294,11 +320,11 @@ const uiController = {
         console.error("Firestore onSnapshot error:", error);
         console.error("Error fetching schedules from Firestore: ", error);
         if(elements.scheduleGrid) elements.scheduleGrid.innerHTML = "<p>Gagal memuat data jadwal. Silakan periksa koneksi Anda atau coba lagi nanti.</p>";
-        if (elements.loadingIndicator) elements.loadingIndicator.classList.remove('active');
+        // if (elements.loadingIndicator) elements.loadingIndicator.classList.remove('active'); // Dihapus
       });
     } catch (error) {
       console.error("Gagal setup listener Firestore (kesalahan lebih lanjut):", error);
-      if (elements.loadingIndicator) elements.loadingIndicator.classList.remove('active');
+      // if (elements.loadingIndicator) elements.loadingIndicator.classList.remove('active'); // Dihapus
     }
 
     // Event Listeners untuk UI Utama
@@ -335,7 +361,7 @@ const uiController = {
 
   processInitialData: (schedulesDocs) => {
     console.log("Memproses data awal. Jumlah dokumen diterima:", schedulesDocs ? schedulesDocs.length : 'null/undefined');
-    if (elements.loadingIndicator) elements.loadingIndicator.classList.remove('active');
+    // if (elements.loadingIndicator) elements.loadingIndicator.classList.remove('active'); // Dihapus
 
     // Initialize Calendar
     if (elements.calendarEl) {
@@ -393,8 +419,8 @@ const uiController = {
     console.log("handleSearch dipanggil.");
     const query = elements.searchInput ? elements.searchInput.value.trim().toLowerCase() : "";
     
-    if (elements.loadingIndicator) elements.loadingIndicator.classList.add('active');
-    if (elements.scheduleGrid) elements.scheduleGrid.innerHTML = ''; // Kosongkan hasil sebelum memuat
+    // if (elements.loadingIndicator) elements.loadingIndicator.classList.add('active'); // Dihapus
+    if (elements.scheduleGrid) elements.scheduleGrid.innerHTML = ''; 
 
     console.log("handleSearch - allSchedulesFromFirestore sebelum filter:", allSchedulesFromFirestore);
     // Process Data
@@ -406,14 +432,15 @@ const uiController = {
     );
     // Render Results
     setTimeout(() => {
-      if (elements.loadingIndicator) elements.loadingIndicator.classList.remove('active');
+      // if (elements.loadingIndicator) elements.loadingIndicator.classList.remove('active'); // Dihapus
       dataManager.renderResults(filteredData, query);
       // Update calendar events if calendar is visible
       if (uiController.currentView === 'calendar' && calendarManager.calendarInstance) {
           calendarManager.rerenderEvents(filteredData); // Atau allSchedulesFromFirestore jika kalender tidak difilter nama
       }
-      if (results.length === 0 && !query) {
-        elements.emptyState.classList.remove('active'); // Sembunyikan empty state jika tidak ada query dan tidak ada hasil (misal, data awal kosong)
+      // Logika emptyState sudah ditangani di renderResults dengan:
+      // elements.emptyState.classList.toggle('active', results.length === 0 && query);
+      // Jika tidak ada query dan tidak ada hasil (data awal kosong), emptyState akan disembunyikan.
       }
     }, 300);
   },
@@ -423,30 +450,25 @@ const uiController = {
   },
 
   toggleTheme: () => {
-    document.body.classList.toggle('dark-theme');
-    localStorage.setItem('theme', document.body.classList.contains('dark-theme') ? 'dark' : 'light');
-    // Update theme icon (jika ada)
-    if (elements.themeToggle) {
-        const icon = elements.themeToggle.querySelector('.theme-icon');
-        if (icon) { // Anda perlu menambahkan span .theme-icon di HTML jika belum ada
-            icon.textContent = document.body.classList.contains('dark-theme') ? '☀️' : '🌙';
-        }
-    }
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    // CSS akan menghandle perubahan ikon melalui atribut data-theme
   },
 
   loadTheme: () => {
     const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'dark') {
-      document.body.classList.add('dark-theme');
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    
+    if (savedTheme) {
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    } else if (prefersDark) {
+      document.documentElement.setAttribute('data-theme', 'dark');
     } else {
-      document.body.classList.remove('dark-theme');
+      document.documentElement.setAttribute('data-theme', 'light'); // Default ke light
     }
-    if (elements.themeToggle) {
-        const icon = elements.themeToggle.querySelector('.theme-icon');
-        if (icon) {
-            icon.textContent = document.body.classList.contains('dark-theme') ? '☀️' : '🌙';
-        }
-    }
+    // CSS akan menghandle ikon berdasarkan atribut data-theme
   },
 
   toggleDriveDropdown: () => {
@@ -461,6 +483,9 @@ const uiController = {
       if (elements.gridViewBtn) elements.gridViewBtn.classList.add('active');
       if (elements.calendarViewBtn) elements.calendarViewBtn.classList.remove('active');
       uiController.handleSearch(); // Refresh grid view
+      if (elements.emptyState && elements.scheduleGrid && elements.scheduleGrid.children.length === 0 && (!elements.searchInput || !elements.searchInput.value)) {
+          elements.emptyState.classList.remove('active');
+      }
     } else if (view === 'calendar') {
       if (elements.emptyState) elements.emptyState.classList.remove('active'); // Sembunyikan empty state di tampilan kalender
       if (elements.scheduleGrid) elements.scheduleGrid.classList.remove('active');
@@ -532,15 +557,17 @@ const uiController = {
     if (!uiController.isMenuInitialized && !localStorage.getItem('menuMoved')) {
       elements.floatingMenu.classList.add('welcome-animation');
       elements.menuToggle.innerHTML = `<span class="assistive-icon"></span>
-        <svg class="welcome-text-circle" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <svg class="welcome-text-circle" viewBox="0 0 100 100">
           <path id="textPathCircle" d="M 50, 50 m -37, 0 a 37,37 0 1,1 74,0 a 37,37 0 1,1 -74,0" fill="none"/>
           <text dy="-2">
             <textPath xlink:href="#textPathCircle" startOffset="50%" text-anchor="middle">
-              MENU DISINI
+              GESER MENU
             </textPath>
           </text>
         </svg>`;
       elements.welcomeTextCircle = elements.floatingMenu.querySelector('.welcome-text-circle');
+      // Pastikan SVG terlihat selama animasi
+      if(elements.welcomeTextCircle) elements.welcomeTextCircle.style.opacity = '1';
 
       setTimeout(() => {
         elements.floatingMenu.classList.remove('welcome-animation');
@@ -548,7 +575,11 @@ const uiController = {
         // Kembalikan ke posisi default atau yang tersimpan
         uiController.positionMenu();
         if (elements.menuToggle.querySelector('svg')) elements.menuToggle.querySelector('svg').remove(); // Hapus SVG teks
-      }, 3000); // Durasi animasi selamat datang
+        // Kembalikan ikon menu default jika perlu (jika SVG menggantikannya sepenuhnya)
+        if (!elements.menuToggle.querySelector('.assistive-icon')) {
+            elements.menuToggle.innerHTML = '<span class="assistive-icon"></span>';
+        }
+      }, 3500); // Durasi animasi selamat datang
     } else {
       uiController.positionMenu(); // Langsung posisikan jika bukan animasi welcome
     }
@@ -557,6 +588,7 @@ const uiController = {
     elements.menuToggle.addEventListener('mousedown', (e) => {
       if (e.target.closest('.menu-content')) return; // Jangan drag jika klik di dalam konten menu
       elements.isDraggingMenu = true;
+      elements.floatingMenu.classList.add('dragging'); // Tambah kelas saat drag
       elements.floatingMenu.style.transition = 'none'; // Matikan transisi saat drag
       const rect = elements.floatingMenu.getBoundingClientRect();
       elements.menuOffsetX = e.clientX - rect.left;
@@ -583,6 +615,7 @@ const uiController = {
     document.addEventListener('mouseup', () => {
       if (elements.isDraggingMenu) {
         elements.isDraggingMenu = false;
+        elements.floatingMenu.classList.remove('dragging'); // Hapus kelas saat drag selesai
         elements.floatingMenu.style.transition = ''; // Aktifkan kembali transisi
         document.body.style.userSelect = '';
         // Simpan posisi menu
@@ -604,7 +637,13 @@ const uiController = {
       elements.floatingMenu.style.top = pos.top;
       elements.floatingMenu.style.right = 'auto';
       elements.floatingMenu.style.bottom = 'auto';
-    } // Jika tidak ada, biarkan CSS default yang mengatur
+    } else if (elements.floatingMenu) {
+        // Set posisi default jika tidak ada yang tersimpan (misalnya, kanan atas)
+        elements.floatingMenu.style.top = '20px';
+        elements.floatingMenu.style.right = '20px';
+        elements.floatingMenu.style.left = 'auto';
+        elements.floatingMenu.style.bottom = 'auto';
+    }
   },
 };
 
