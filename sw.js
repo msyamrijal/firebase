@@ -1,5 +1,5 @@
 // Versi Service Worker (update untuk invalidasi cache)
-const SW_VERSION = '2.3.1';
+const SW_VERSION = '2.5.0'; // Versi dinaikkan
 const CACHE_NAME = `academic-planner-${SW_VERSION}`;
 
 // Daftar asset yang akan di-cache
@@ -35,14 +35,7 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
-        // Cache asset utama
-        cache.addAll(PRECACHE_ASSETS);
-        
-        // Cache runtime
-        return cache.addAll([
-          '/',
-          '/index.html'
-        ]);
+        return cache.addAll(PRECACHE_ASSETS); // Cukup cache PRECACHE_ASSETS
       })
       .then(() => self.skipWaiting())
   );
@@ -109,7 +102,8 @@ function handleExternalAssets(event) {
   // Fonts & CSS (Stale While Revalidate)
   if (request.destination === 'font' || 
       request.destination === 'style' ||
-      request.url.includes('fonts.googleapis.com')) {
+      request.url.includes('fonts.googleapis.com') ||
+      request.url.includes('gstatic.com')) { // Tambahkan gstatic.com untuk Firebase SDK
     event.respondWith(
       staleWhileRevalidate(request)
     );
