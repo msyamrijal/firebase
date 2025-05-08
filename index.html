@@ -27,77 +27,80 @@
     <header class="hero">      
       <h1 class="title">Jadwal Pemakalah</h1>
 
-      <!-- Interactive Icon Bar for Controls -->
-      <div class="interactive-icon-bar">
-        <!-- Google Drive Icon Control -->
-        <div class="icon-control-wrapper" id="google-drive-control">
-          <button class="icon-trigger-btn" aria-label="Akses Google Drive" aria-expanded="false" aria-controls="driveDropdownContent">
-            <i class="fab fa-google-drive" aria-hidden="true"></i>
-          </button>
-          <div class="dropdown-panel" id="driveDropdownContent">
-            <select id="driveDropdown" aria-label="Pilih kelas untuk mengakses Google Drive">
-              <option value="">-- Pilih Kelas Drive --</option>
-              <option value="https://drive.google.com/drive/folders/12_mT3WcsuFeYOYfvuQnKjFH1B1dVgNyZ?usp=drive_link">
-                PKU B
-              </option>
-              <option value="https://drive.google.com/drive/folders/1La24Y-0DOPq5iJUUVg-UaF8gWEIsIqHQ?usp=drive_link">
-                PTIQ H
-              </option>
-              <option value="https://drive.google.com/drive/folders/1i83aR0pZj_lCFMaW6gSHAbXinvaQ3gFL?usp=drive_link">
-                PKUP
-              </option>
-            </select>
+      <!-- Stack Header for All Controls -->
+      <div id="stack-header">
+        <!-- Interactive Icon Bar for Controls -->
+        <div class="interactive-icon-bar">
+          <!-- Google Drive Icon Control -->
+          <div class="icon-control-wrapper" id="google-drive-control">
+            <button class="icon-trigger-btn" aria-label="Akses Google Drive" aria-expanded="false" aria-controls="driveDropdownContent">
+              <i class="fab fa-google-drive" aria-hidden="true"></i>
+            </button>
+            <div class="dropdown-panel" id="driveDropdownContent">
+              <select id="driveDropdown" aria-label="Pilih kelas untuk mengakses Google Drive">
+                <option value="">-- Pilih Kelas Drive --</option>
+                <option value="https://drive.google.com/drive/folders/12_mT3WcsuFeYOYfvuQnKjFH1B1dVgNyZ?usp=drive_link">
+                  PKU B
+                </option>
+                <option value="https://drive.google.com/drive/folders/1La24Y-0DOPq5iJUUVg-UaF8gWEIsIqHQ?usp=drive_link">
+                  PTIQ H
+                </option>
+                <option value="https://drive.google.com/drive/folders/1i83aR0pZj_lCFMaW6gSHAbXinvaQ3gFL?usp=drive_link">
+                  PKUP
+                </option>
+              </select>
+            </div>
           </div>
-        </div>
 
-        <!-- Class Selector -->
-        <div class="icon-control-wrapper" id="class-filter-control">
-          <button class="icon-trigger-btn" aria-label="Pilih Kelas" aria-expanded="false" aria-controls="classSelectContent">
-            <i class="fa-solid fa-graduation-cap" aria-hidden="true"></i>
-          </button>
-          <div class="dropdown-panel" id="classSelectContent">
-            <label for="class-select" class="sr-only">Pilih Kelas</label>
-            <select id="class-select" aria-label="Pilih kelas">
-              <option value="all">Semua Kelas</option>
-              <option value="PTIQ">Kelas PTIQ H</option>
-              <option value="PKU B">Kelas PKU B</option>
-              <option value="PKUP">Kelas PKUP</option>
-            </select>
+          <!-- Class Selector -->
+          <div class="icon-control-wrapper" id="class-filter-control">
+            <button class="icon-trigger-btn" aria-label="Pilih Kelas" aria-expanded="false" aria-controls="classSelectContent">
+              <i class="fa-solid fa-graduation-cap" aria-hidden="true"></i>
+            </button>
+            <div class="dropdown-panel" id="classSelectContent">
+              <label for="class-select" class="sr-only">Pilih Kelas</label>
+              <select id="class-select" aria-label="Pilih kelas">
+                <option value="all">Semua Kelas</option>
+                <option value="PTIQ">Kelas PTIQ H</option>
+                <option value="PKU B">Kelas PKU B</option>
+                <option value="PKUP">Kelas PKUP</option>
+              </select>
+            </div>
           </div>
-        </div>
 
-        <!-- Subject Selector Icon Control -->
-        <div class="icon-control-wrapper" id="subject-filter-control">
-          <button class="icon-trigger-btn" aria-label="Pilih Mata Kuliah" aria-expanded="false" aria-controls="subjectSelectContent">
-            <i class="fa-solid fa-book" aria-hidden="true"></i>
-          </button>
-          <div class="dropdown-panel" id="subjectSelectContent">
-            <label for="subject-select" class="sr-only">Pilih Mata Kuliah</label>
-            <select id="subject-select" aria-label="Pilih mata kuliah">
-              <option value="">Semua Mata Kuliah</option>
-            </select>
+          <!-- Subject Selector Icon Control -->
+          <div class="icon-control-wrapper" id="subject-filter-control">
+            <button class="icon-trigger-btn" aria-label="Pilih Mata Kuliah" aria-expanded="false" aria-controls="subjectSelectContent">
+              <i class="fa-solid fa-book" aria-hidden="true"></i>
+            </button>
+            <div class="dropdown-panel" id="subjectSelectContent">
+              <label for="subject-select" class="sr-only">Pilih Mata Kuliah</label>
+              <select id="subject-select" aria-label="Pilih mata kuliah">
+                <option value="">Semua Mata Kuliah</option>
+              </select>
+            </div>
           </div>
-        </div>
 
-        <!-- Name Search Icon Control -->
-        <div class="icon-control-wrapper" id="name-search-control">
-          <button class="icon-trigger-btn" aria-label="Cari Nama" aria-expanded="false" aria-controls="searchNameInputWrapper">
-            <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
-          </button>
-          <div class="input-panel" id="searchNameInputWrapper">
-            <label for="search-name" class="sr-only">Cari Nama</label>
-            <input type="text" 
-                   id="search-name" 
-                   placeholder="Cari nama..."
-                   aria-label="Input pencarian nama">
+          <!-- Name Search Icon Control -->
+          <div class="icon-control-wrapper" id="name-search-control">
+            <button class="icon-trigger-btn" aria-label="Cari Nama" aria-expanded="false" aria-controls="searchNameInputWrapper">
+              <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+            </button>
+            <div class="input-panel" id="searchNameInputWrapper">
+              <label for="search-name" class="sr-only">Cari Nama</label>
+              <input type="text" 
+                     id="search-name" 
+                     placeholder="Cari nama..."
+                     aria-label="Input pencarian nama">
+            </div>
           </div>
         </div>
-      </div>
-      
-      <!-- View Toggle Buttons -->
-      <div class="view-toggle-buttons">
-        <button id="show-datacard-btn" class="view-toggle-btn active" aria-pressed="true">Daftar Jadwal</button>
-        <button id="show-calendar-btn" class="view-toggle-btn" aria-pressed="false">Kalender</button>
+        
+        <!-- View Toggle Buttons -->
+        <div class="view-toggle-buttons">
+          <button id="show-datacard-btn" class="view-toggle-btn active" aria-pressed="true">Daftar Jadwal</button>
+          <button id="show-calendar-btn" class="view-toggle-btn" aria-pressed="false">Kalender</button>
+        </div>
       </div>
 
       <!-- Calendar Container -->
