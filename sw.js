@@ -1,5 +1,5 @@
 // Versi Service Worker (update untuk invalidasi cache)
-const SW_VERSION = '2.7.3'; // Naikkan versi lagi
+const SW_VERSION = '2.7.4'; // Naikkan versi lagi
 const CACHE_NAME = `academic-planner-${SW_VERSION}`;
 
 // Daftar asset yang akan di-cache
@@ -13,6 +13,8 @@ const PRECACHE_ASSETS = [
   // Asset lokal
   '/icons/icon-192.png',
   '/icons/icon-512.png',
+  '/icons/search-icon.png', // Ditambahkan untuk manifest shortcut
+  '/icons/calendar-icon.png', // Ditambahkan untuk manifest shortcut
   '/screenshots/desktop.png',
   '/offline.html',
 

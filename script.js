@@ -97,7 +97,7 @@ const calendarManager = {
       headerToolbar: {
         left: 'prev,next today',
         center: 'title',
-        right: ''
+        right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek' // Menambahkan opsi view kalender
       },
       events: calendarManager.generateEventsFromFirestore(scheduleDocs),
       eventClick: (info) => {
@@ -111,8 +111,7 @@ const calendarManager = {
                 </div>
                 <p class="institute">${className}</p>
                 ${materi ? `<div class="discussion-topic"><strong>Materi:</strong> ${materi}</div>` : ''}
-                ${time ? `<p class="card-time"><i class="fas fa-clock"></i> ${time}</p>` : ''}
-                <div class="participants"><strong>Peserta:</strong> ${peserta.map(name => `<span class="participant-tag">${name}</span>`).join('')}</div>
+                <div class="participants">${peserta.map(name => `<span class="participant-tag">${name}</span>`).join('')}</div>
             </div>
         `;
         // Menggunakan struktur modal baru
@@ -228,7 +227,6 @@ const dataManager = {
         </div>
         <p class="institute clickable" data-schedule-id="${id}">${className}</p>
         ${materi ? `<div class="discussion-topic clickable" data-schedule-id="${id}"><strong>Materi:</strong> ${materi}</div>` : ''}
-        ${time ? `<p class="card-time clickable" data-schedule-id="${id}"><i class="fas fa-clock"></i> ${time}</p>` : ''}
         <div class="participants">
                 ${peserta.map(name => 
                     `<span class="participant-tag ${query && name.toLowerCase().includes(query.toLowerCase()) ? 'highlight' : ''}">${name}</span>`
@@ -249,9 +247,7 @@ const dataManager = {
                 </div>
                 <p class="institute">${scheduleData.className}</p>
                 ${scheduleData.materi ? `<div class="discussion-topic"><strong>Materi:</strong> ${scheduleData.materi}</div>` : ''}
-                ${scheduleData.time ? `<p class="card-time"><i class="fas fa-clock"></i> ${scheduleData.time}</p>` : ''}
                 <div class="participants">
-                    <strong>Peserta:</strong>
                     ${scheduleData.peserta.map(name => `<span class="participant-tag">${name}</span>`).join('')}
                 </div>
               </div>
@@ -312,10 +308,7 @@ const uiController = {
         }
         // Pastikan allSchedulesFromFirestore adalah array sebelum dikirim
         uiController.processInitialData(allSchedulesFromFirestore); // Panggil ini hanya ketika data benar-benar ada
-        // Menghapus initialSpinner yang tidak didefinisikan, kita gunakan loadingIndicator
-        if (elements.loadingIndicator && elements.loadingIndicator.classList.contains('active')) {
-            // Dihapus di processInitialData atau di sini jika processInitialData tidak selalu dipanggil
-        }
+        // Elemen loadingIndicator sudah dihapus dari HTML dan referensi JS sebelumnya
       }, (error) => {
         console.error("Firestore onSnapshot error:", error);
         console.error("Error fetching schedules from Firestore: ", error);
