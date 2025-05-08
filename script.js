@@ -9,6 +9,7 @@ if ('serviceWorker' in navigator) {
 
 // Firebase SDK (gunakan versi yang sesuai, contoh v9+)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js"; // Pastikan ini diimpor
 import { getFirestore, collection, getDocs, onSnapshot, addDoc, doc, updateDoc, deleteDoc, query, orderBy, where, enableIndexedDbPersistence, CACHE_SIZE_UNLIMITED } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
 
 // TODO: Ganti dengan konfigurasi Firebase proyek Anda
@@ -25,10 +26,12 @@ const firebaseConfig = {
 // Initialize Firebase
 const fbApp = initializeApp(firebaseConfig);
 const db = getFirestore(fbApp); // Dapatkan instance Firestore
+const auth = getAuth(fbApp); // Dapatkan instance Firebase Auth
 console.log("Firebase Initialized. Firestore instance:", db ? "OK" : "Failed");
 
 // app.js
 let dataByClass = {}; // Akan diisi dari Firestore, atau bisa juga tidak digunakan lagi jika struktur data utama adalah array
+let currentUser = null; // Untuk menyimpan informasi pengguna yang login
 let allSchedulesFromFirestore = []; // Untuk menyimpan semua jadwal dari Firestore
 
 // Global Elements
@@ -53,7 +56,9 @@ const elements = {
   },
   hamburgerBtn: document.getElementById('hamburger-menu-btn'),
   mobileMenuPanel: document.getElementById('mobile-menu-panel'),
-  closeMobileMenuBtn: document.getElementById('close-mobile-menu-btn')
+  closeMobileMenuBtn: document.getElementById('close-mobile-menu-btn'),
+  loginBtn: document.getElementById('login-btn'), // Pastikan ini ada
+  logoutBtn: document.getElementById('logout-btn') // Pastikan ini ada
 };
 
 // Utility Functions
@@ -171,15 +176,15 @@ const dataManager = {
     console.log("dataManager.getFilteredDataFromFirestore - Input schedules:", schedules, "Class:", selectedClass, "Subject:", selectedSubject, "Query:", nameQuery);
     if (!schedules || schedules.length === 0) return [];
     const today = new Date().setHours(0,0,0,0);
-
-    return schedules.filter(doc => {
+    
+    let filteredSchedules = schedules.filter(doc => {
       const data = doc.data();
       const eventDate = new Date(data.date).setHours(0,0,0,0);
       if (eventDate < today) return false;
-
+    
       if (selectedClass !== 'all' && data.className !== selectedClass) return false;
       if (selectedSubject && data.subject !== selectedSubject) return false;
-
+    
       if (nameQuery) {
         const queryText = nameQuery.toLowerCase();
         return data.peserta.some(name => name.toLowerCase().includes(queryText));
@@ -187,9 +192,18 @@ const dataManager = {
       return true;
     }).map(doc => { // Transformasi ke format yang diharapkan renderResults
         const data = doc.data();
-        return { ...data, id: doc.id }; // Sertakan ID dokumen jika perlu
+        return { ...data, id: doc.id };
     }).sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime()); // Pastikan perbandingan tanggal benar
     // console.log("dataManager.getFilteredDataFromFirestore - Output filteredData:", filteredData); // Bisa di-uncomment
+
+    // Jika ada pengguna yang login, filter lebih lanjut berdasarkan email pengguna di field peserta
+    if (currentUser && currentUser.email) {
+      console.log(`Filtering for user: ${currentUser.email}`);
+      filteredSchedules = filteredSchedules.filter(schedule => 
+        schedule.peserta && schedule.peserta.some(p => p.toLowerCase().includes(currentUser.email.toLowerCase()))
+      );
+    }
+    return filteredSchedules;
   },
 
   renderResults: (results, query) => {
