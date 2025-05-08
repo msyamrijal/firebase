@@ -222,39 +222,36 @@ const dataManager = {
       // Struktur HTML kartu disesuaikan dengan kelas di style.css
       card.innerHTML = `
         <div class="card-header">
-            <h3 class="course-title clickable" data-schedule-id="${id}">${subject}</h3>
-            <span class="date-display clickable" data-schedule-id="${id}">${utils.formatDate(date)}</span>
+            <h3 class="course-title" data-schedule-id="${id}">${subject}</h3>
+            <span class="date-display" data-schedule-id="${id}">${utils.formatDate(date)}</span>
         </div>
-        <p class="institute clickable" data-schedule-id="${id}">${className}</p>
-        ${materi ? `<div class="discussion-topic clickable" data-schedule-id="${id}"><strong>Materi:</strong> ${materi}</div>` : ''}
+        <p class="institute" data-schedule-id="${id}">${className}</p>
+        ${materi ? `<div class="discussion-topic" data-schedule-id="${id}"><strong>Materi:</strong> ${materi}</div>` : ''}
         <div class="participants">
                 ${peserta.map(name => 
                     `<span class="participant-tag ${query && name.toLowerCase().includes(query.toLowerCase()) ? 'highlight' : ''}">${name}</span>`
                 ).join('')}
         </div>
-        <!-- Tombol detail bisa dihilangkan jika seluruh kartu clickable -->
       `;
       
-      // Membuat seluruh kartu (atau bagian tertentu) clickable untuk membuka modal
-      card.querySelectorAll('.clickable').forEach(clickableElement => {
-        clickableElement.addEventListener('click', () => {
-            // Menggunakan scheduleData yang ditangkap oleh loop untuk modal
-            const modalContent = `
-              <div class="modal-item">
-                <div class="card-header">
-                    <h3 class="course-title">${scheduleData.subject}</h3>
-                    <span class="date-display">${utils.formatDate(scheduleData.date)}</span>
-                </div>
-                <p class="institute">${scheduleData.className}</p>
-                ${scheduleData.materi ? `<div class="discussion-topic"><strong>Materi:</strong> ${scheduleData.materi}</div>` : ''}
-                <div class="participants">
-                    ${scheduleData.peserta.map(name => `<span class="participant-tag">${name}</span>`).join('')}
-                </div>
+      // Menjadikan seluruh kartu clickable untuk membuka modal
+      card.addEventListener('click', () => {
+          // Menggunakan scheduleData yang ditangkap oleh loop untuk modal
+          const modalContent = `
+            <div class="modal-item">
+              <div class="card-header">
+                  <h3 class="course-title">${scheduleData.subject}</h3>
+                  <span class="date-display">${utils.formatDate(scheduleData.date)}</span>
               </div>
-            `;
-            elements.popup.modalBody.innerHTML = modalContent;
-            if (elements.popup.modal) elements.popup.modal.classList.add('active');
-        });
+              <p class="institute">${scheduleData.className}</p>
+              ${scheduleData.materi ? `<div class="discussion-topic"><strong>Materi:</strong> ${scheduleData.materi}</div>` : ''}
+              <div class="participants">
+                  ${scheduleData.peserta.map(name => `<span class="participant-tag">${name}</span>`).join('')}
+              </div>
+            </div>
+          `;
+          elements.popup.modalBody.innerHTML = modalContent;
+          if (elements.popup.modal) elements.popup.modal.classList.add('active');
       });
       elements.scheduleGrid.appendChild(card);
     });

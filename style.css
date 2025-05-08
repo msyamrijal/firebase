@@ -492,6 +492,7 @@ body {
   border: 1px solid var(--color-border);
   transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
   display: flex;
+  cursor: pointer; /* Menjadikan seluruh kartu dapat diklik */
   flex-direction: column;
 }
 
