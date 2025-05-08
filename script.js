@@ -43,7 +43,8 @@ const elements = {
   popup: {
     overlay: document.getElementById('overlay'),
     content: document.getElementById('popup-content'),
-    container: document.getElementById('popup')
+    container: document.getElementById('popup'),
+    visibleTitle: document.getElementById('popupVisibleTitle') // Tambahkan referensi judul popup
   },
   pwaPopup: document.getElementById('add-to-home-popup'),
   viewToggleButtons: { // Tambahkan elemen tombol view
@@ -89,9 +90,11 @@ const calendarManager = {
       },
       events: calendarManager.generateEventsFromFirestore(scheduleDocs),
       eventClick: (info) => {
+        elements.popup.visibleTitle.textContent = 'Detail Jadwal Kalender'; // Set judul popup
         elements.popup.content.innerHTML = info.event.extendedProps.detail; // Langsung gunakan HTML dari detail
         elements.popup.overlay.style.display = 'block';
         elements.popup.container.style.display = 'block';
+        elements.popup.content.focus(); // Fokus ke konten popup
       }
     });
   },
@@ -194,7 +197,7 @@ const dataManager = {
       card.innerHTML = `
         <div class="card-meta">
           <i class="fa-solid fa-calendar-day"></i>
-          <span class="card-date">${utils.formatDate(date)}</span>
+          <span class="card-date">${utils.formatDate(date)}</span> 
         </div>
         <div class="card-meta">
           <i class="fa-solid fa-clock"></i>
@@ -202,22 +205,25 @@ const dataManager = {
         </div>
         <div class="card-meta">
           <i class="fa-solid fa-book"></i>
-          <span>${subject}</span>
+          <span class="clickable-item" data-type="matkul" data-value="${subject.replace(/"/g, '&quot;')}">${subject}</span>
         </div>
         <div class="card-group">
           <i class="fa-solid fa-users"></i>
           ${peserta.map(name => 
-            name.toLowerCase().includes(query) ? 
-            `<span class="highlight">${name}</span>` : name
-          ).join(', ')}
+            const isHighlighted = query && name.toLowerCase().includes(query.toLowerCase());
+            const nameDisplay = isHighlighted ? `<span class="highlight">${name}</span>` : name;
+            // Escape quotes in data-value
+            const escapedName = name.replace(/"/g, '&quot;');
+            return `<span class="clickable-item" data-type="peserta" data-value="${escapedName}">${nameDisplay}</span>`;
+          }).join(', ')}
         </div>
         <div class="card-meta">
           <i class="fa-solid fa-lightbulb"></i>
-          <span>Materi: ${materi || 'Belum ada materi'}</span>
+          <span>Materi: ${materi || 'Belum ada materi'}</span> 
         </div>
         <div class="card-meta">
           <i class="fa-solid fa-chalkboard-user"></i>
-          <span>Kelas: ${className}</span>
+          <span>Kelas: <span class="clickable-item" data-type="kelas" data-value="${className.replace(/"/g, '&quot;')}">${className}</span></span>
         </div>
       `;
       
@@ -343,6 +349,7 @@ const uiController = {
     elements.classSelect.addEventListener('change', uiController.handleClassChange);
     elements.subjectSelect.addEventListener('change', uiController.handleSearch);
     elements.nameInput.addEventListener('input', utils.debounce(uiController.handleSearch, 300));
+    elements.resultsDiv.addEventListener('click', uiController.handleDatacardClick); // Event delegation untuk klik datacard
     elements.driveDropdown.addEventListener("change", uiController.handleDriveSelect);
     // document.getElementById('close-popup').addEventListener('click', uiController.closePopup); // Sudah dihandle di HTML onclick
     
@@ -415,6 +422,57 @@ const uiController = {
       // Panggil handleSearch untuk mengisi datacards saat beralih ke tampilan ini
       uiController.handleSearch();
     }
+  },
+
+  handleDatacardClick: (event) => {
+    const target = event.target.closest('.clickable-item');
+    if (target) {
+      const type = target.dataset.type;
+      const value = target.dataset.value;
+      if (type && value) {
+        uiController.showRelatedSchedules(type, value);
+      }
+    }
+  },
+
+  showRelatedSchedules: (type, value) => {
+    const today = new Date().setHours(0, 0, 0, 0);
+    let titleText = '';
+    let filteredSchedules = [];
+
+    if (allSchedulesFromFirestore && allSchedulesFromFirestore.length > 0) {
+      filteredSchedules = allSchedulesFromFirestore.filter(doc => {
+        const data = doc.data();
+        const eventDate = new Date(data.date).setHours(0,0,0,0);
+        if (eventDate < today) return false; // Hanya jadwal mendatang
+
+        switch(type) {
+          case 'peserta':
+            titleText = `Jadwal Mendatang untuk ${value}`;
+            return data.peserta && data.peserta.includes(value);
+          case 'kelas':
+            titleText = `Jadwal Mendatang untuk Kelas ${value}`;
+            return data.className === value;
+          case 'matkul':
+            titleText = `Jadwal Mendatang untuk Mata Kuliah ${value}`;
+            return data.subject === value;
+          default: return false;
+        }
+      }).map(doc => doc.data()).sort((a,b) => new Date(a.date) - new Date(b.date));
+    }
+
+    elements.popup.visibleTitle.textContent = titleText;
+    if (filteredSchedules.length > 0) {
+      elements.popup.content.innerHTML = `
+        <ul class="related-schedules-list">
+          ${filteredSchedules.map(s => `<li><strong>${utils.formatDate(s.date)}</strong> (${s.time || 'N/A'})<br><strong>Kelas:</strong> ${s.className}<br><strong>Matkul:</strong> ${s.subject}<br><strong>Peserta:</strong> ${s.peserta.join(', ')}<br><strong>Materi:</strong> ${s.materi || 'Belum ada'}</li>`).join('')}
+        </ul>`;
+    } else {
+      elements.popup.content.innerHTML = `<p>Tidak ada jadwal mendatang yang ditemukan untuk ${value}.</p>`;
+    }
+    elements.popup.overlay.style.display = 'block';
+    elements.popup.container.style.display = 'block';
+    elements.popup.content.focus();
   },
 
   handleClassChange: () => {
@@ -499,6 +557,8 @@ const uiController = {
   closePopup: () => {
     elements.popup.overlay.style.display = 'none';
     elements.popup.container.style.display = 'none';
+    elements.popup.visibleTitle.textContent = 'Detail Jadwal'; // Reset judul
+    elements.popup.content.innerHTML = ''; // Bersihkan konten
   },
 
   initPWA: () => {

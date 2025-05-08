@@ -269,6 +269,18 @@ button:focus-visible {
   border-radius: 4px;
 }
 
+/* Clickable items in datacard */
+.clickable-item {
+  cursor: pointer;
+  text-decoration: underline;
+  color: var(--accent);
+  transition: color 0.2s ease;
+}
+
+.clickable-item:hover {
+  color: var(--primary);
+}
+
 /* Popups */
 .overlay {
   display: none;
@@ -296,6 +308,13 @@ button:focus-visible {
   width: 500px;
 }
 
+.popup-main-title {
+  font-size: 1.4rem; /* Adjusted size */
+  color: var(--primary);
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
 .close-btn {
   position: absolute;
   top: 0.5rem;
@@ -305,6 +324,28 @@ button:focus-visible {
   font-size: 1.5rem;
   cursor: pointer;
   color: var(--text-light);
+}
+
+/* Related Schedules List in Popup */
+.related-schedules-list {
+  list-style: none;
+  padding: 0;
+  max-height: 350px; /* Increased height */
+  overflow-y: auto;
+  margin-top: 0.5rem; /* Space from title */
+}
+
+.related-schedules-list li {
+  background-color: rgba(160, 160, 131, 0.05);
+  padding: 0.85rem; /* Slightly more padding */
+  border-radius: var(--radius); /* Consistent radius */
+  margin-bottom: 0.75rem;
+  border: 1px solid var(--secondary);
+  font-size: 0.9rem; /* Slightly smaller font for list items */
+}
+
+.related-schedules-list li strong {
+  color: var(--text);
 }
 
 /* PWA Install Prompt */
