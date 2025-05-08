@@ -1,5 +1,5 @@
 // Versi Service Worker (update untuk invalidasi cache)
-const SW_VERSION = '2.7.0'; // Naikkan versi lagi
+const SW_VERSION = '2.7.1'; // Naikkan versi lagi
 const CACHE_NAME = `academic-planner-${SW_VERSION}`;
 
 // Daftar asset yang akan di-cache
