@@ -1,13 +1,13 @@
 :root {
-  --primary: #4CAF50; /* Hijau Utama (Material Green 500) */
-  --secondary: #81C784; /* Hijau Lebih Muda (Material Green 300) */
-  --accent: #388E3C; /* Hijau Lebih Tua/Aksen Kuat (Material Green 700) */
+  --primary: #FF7F50; /* Coral (Oranye Utama) */
+  --secondary: #FFA07A; /* Light Salmon (Oranye Lebih Muda) */
+  --accent: #FF6347; /* Tomato (Oranye Kemerahan untuk Aksen Kuat) */
   --background: #FFFFFF; /* Putih */
-  --card-bg: #E8F5E9; /* Hijau Sangat Muda untuk Kartu (Material Green 50) */
+  --card-bg: #FFF5EE; /* SeaShell (Putih dengan sedikit nuansa oranye/peach untuk kartu) */
   --text: #333333; /* Abu-abu Tua (untuk kontras yang baik dengan putih) */
   --text-light: #777777; /* Abu-abu Lebih Muda */
-  --gradient: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); /* Gradient Hijau */
-  --shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 2px 4px rgba(0, 0, 0, 0.04);
+  --gradient: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); /* Gradient Oranye */
+  --shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 2px 4px rgba(0, 0, 0, 0.04); /* Shadow lebih halus untuk background putih */
   --radius: 12px;
   --transition: all 0.3s ease;
 }
@@ -170,13 +170,13 @@ select:focus,
 input[type="text"]:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2); /* Shadow fokus hijau */
+  box-shadow: 0 0 0 3px rgba(212, 163, 115, 0.2);
 }
 
 button:focus-visible {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2); /* Shadow fokus hijau */
+  box-shadow: 0 0 0 3px rgba(99,102,241,0.2);
 }
 
 .select-as-button {
@@ -193,7 +193,7 @@ button:focus-visible {
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%234CAF50'%3E%3Cpath fill-rule='evenodd' d='M4.22 6.22a.75.75 0 0 1 1.06 0L8 8.94l2.72-2.72a.75.75 0 1 1 1.06 1.06l-3.25 3.25a.75.75 0 0 1-1.06 0L4.22 7.28a.75.75 0 0 1 0-1.06Z'/%3E%3C/svg%3E"); /* Panah SVG hijau */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23FF7F50'%3E%3Cpath fill-rule='evenodd' d='M4.22 6.22a.75.75 0 0 1 1.06 0L8 8.94l2.72-2.72a.75.75 0 1 1 1.06 1.06l-3.25 3.25a.75.75 0 0 1-1.06 0L4.22 7.28a.75.75 0 0 1 0-1.06Z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 0.5rem center;
   background-size: 1em 1em;
@@ -207,7 +207,7 @@ button:focus-visible {
   color: var(--accent);
   border-color: var(--secondary);
   outline: none;
-  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.3); /* Shadow fokus hijau */
+  box-shadow: 0 0 0 3px rgba(255, 127, 80, 0.3);
 }
 
 .icon-control-wrapper {
@@ -235,7 +235,7 @@ button:focus-visible {
   background: var(--secondary);
   color: var(--accent);
   outline: none;
-  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2); /* Shadow fokus hijau */
+  box-shadow: 0 0 0 3px rgba(212, 163, 115, 0.2);
 }
 .control-trigger-btn[aria-expanded="true"] {
   background-color: var(--secondary);
@@ -281,7 +281,7 @@ button:focus-visible {
   background: var(--secondary);
   color: var(--accent);
   outline: none;
-  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.3); /* Shadow fokus hijau */
+  box-shadow: 0 0 0 3px rgba(255, 127, 80, 0.3);
 }
 
 .view-toggle-btn.active {
@@ -319,7 +319,7 @@ button:focus-visible {
 
 .result-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 16px rgba(76, 175, 80, 0.1); /* Shadow hover hijau */
+  box-shadow: 0 8px 16px rgba(255, 127, 80, 0.1);
 }
 
 .card-meta {
@@ -342,15 +342,15 @@ button:focus-visible {
 
 .card-group {
   padding: 0.75rem;
-  background: rgba(76, 175, 80, 0.05); /* Background grup hijau tipis */
+  background: rgba(255, 127, 80, 0.05);
   border-radius: 8px;
   font-size: 0.95rem;
   color: var(--text);
 }
 
 .highlight {
-  background: rgba(56, 142, 60, 0.2); /* Highlight hijau (menggunakan var(--accent) green) */
-  color: var(--accent); /* Teks highlight menggunakan warna aksen hijau */
+  background: rgba(255, 99, 71, 0.2);
+  color: var(--accent);
   padding: 0.1rem 0.3rem;
   border-radius: 4px;
 }
@@ -419,7 +419,7 @@ button:focus-visible {
 }
 
 .related-schedules-list li {
-  background-color: rgba(76, 175, 80, 0.03); /* Background item list hijau tipis */
+  background-color: rgba(255, 127, 80, 0.03);
   padding: 0.85rem;
   border-radius: var(--radius);
   margin-bottom: 0.75rem;
