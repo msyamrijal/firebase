@@ -304,10 +304,16 @@ const uiController = {
     try {
       const schedulesCollection = collection(db, "schedules");
       onSnapshot(query(schedulesCollection, orderBy("date")), (querySnapshot) => {
+        console.log("Firestore snapshot diterima. Jumlah dokumen:", querySnapshot.size);
         allSchedulesFromFirestore = querySnapshot.docs;
+        if (querySnapshot.empty) {
+          console.warn("Tidak ada dokumen jadwal yang ditemukan di Firestore.");
+          elements.resultsDiv.innerHTML = "<p>Tidak ada jadwal yang tersedia saat ini.</p>";
+        }
         uiController.processInitialData(allSchedulesFromFirestore); // Panggil ini hanya ketika data benar-benar ada
         if (initialSpinner.parentNode) initialSpinner.remove();
       }, (error) => {
+        console.error("Firestore onSnapshot error:", error);
         console.error("Error fetching schedules from Firestore: ", error);
         elements.resultsDiv.innerHTML = "<p>Gagal memuat data jadwal. Silakan periksa koneksi Anda atau coba lagi nanti.</p>";
         if (initialSpinner.parentNode) initialSpinner.remove();
@@ -340,6 +346,7 @@ const uiController = {
   },
 
   processInitialData: (schedulesDocs) => {
+    console.log("Memproses data awal. Jumlah dokumen diterima:", schedulesDocs.length);
     // Initialize Calendar
     calendarManager.init(schedulesDocs);
     if(calendarManager.calendarInstance) calendarManager.calendarInstance.render();
