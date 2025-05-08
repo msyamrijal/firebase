@@ -33,34 +33,19 @@ let allSchedulesFromFirestore = []; // Untuk menyimpan semua jadwal dari Firesto
 
 // Global Elements
 const elements = {
-  // Elemen menu mengambang dihapus
-  // menuToggle: document.querySelector('.menu-toggle'),
-  // floatingMenu: document.querySelector('.floating-menu'),
-  searchInput: document.getElementById('searchInput'), // Sebelumnya nameInput
-  institutionFilter: document.getElementById('institutionFilter'), // Sebelumnya classSelect
-  subjectFilter: document.getElementById('subjectFilter'), // Sebelumnya subjectSelect
-  themeToggle: document.getElementById('themeToggle'),
-  driveToggleBtn: document.getElementById('driveToggleBtn'),
-  driveDropdownMenu: document.getElementById('driveDropdown'), // Kontainer link drive
-  gridViewBtn: document.getElementById('gridViewBtn'),
-  calendarViewBtn: document.getElementById('calendarViewBtn'),
-  scheduleGrid: document.getElementById('scheduleGrid'), // Sebelumnya resultsDiv
+  classSelect: document.getElementById("class-select"),
+  subjectSelect: document.getElementById("subject-select"),
+  nameInput: document.getElementById("search-name"),
+  resultsDiv: document.getElementById("results"),
   calendarEl: document.getElementById('calendar'),
-  calendarView: document.getElementById('calendarView'),
-  // loadingIndicator: document.getElementById('loading'), // Dihapus karena elemen HTML-nya dihapus
-  emptyState: document.getElementById('emptyState'),
+  printContainer: document.querySelector('.print-button-container'),
+  driveDropdown: document.getElementById("driveDropdown"),
   popup: {
-    modal: document.getElementById('genericModal'),
-    modalBody: document.getElementById('modalBody'), // Sebelumnya popup-content
+    overlay: document.getElementById('overlay'),
+    content: document.getElementById('popup-content'),
+    container: document.getElementById('popup')
   },
-  pwaPopup: document.getElementById('installPopup'), // Sebelumnya add-to-home-popup
-  installPwaBtn: document.getElementById('installBtn'),
-  dismissPwaBtn: document.getElementById('dismissInstallBtn'),
-  // Properti untuk animasi dan draggable menu dihapus
-  // welcomeTextCircle: null, 
-  // isDraggingMenu: false,
-  // menuOffsetX: 0,
-  // menuOffsetY: 0,
+  pwaPopup: document.getElementById('add-to-home-popup')
 };
 
 // Utility Functions
@@ -96,26 +81,13 @@ const calendarManager = {
       headerToolbar: {
         left: 'prev,next today',
         center: 'title',
-        right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek' // Menambahkan opsi view kalender
+        right: ''
       },
       events: calendarManager.generateEventsFromFirestore(scheduleDocs),
       eventClick: (info) => {
-        // Menggunakan struktur modal baru dan data asli dari event
-        const { className, subject, date, peserta, materi, time } = info.event.extendedProps.originalData;
-        const modalContent = `
-            <div class="modal-item">
-                <div class="card-header">
-                    <h3 class="course-title">${subject}</h3>
-                    <span class="date-display">${utils.formatDate(date)}</span>
-                </div>
-                <p class="institute">${className}</p>
-                ${materi ? `<div class="discussion-topic"><strong>Materi:</strong> ${materi}</div>` : ''}
-                <div class="participants">${peserta.map(name => `<span class="participant-tag">${name}</span>`).join('')}</div>
-            </div>
-        `;
-        // Menggunakan struktur modal baru
-        elements.popup.modalBody.innerHTML = modalContent;
-        if (elements.popup.modal) elements.popup.modal.classList.add('active');
+        elements.popup.content.innerHTML = info.event.extendedProps.detail; // Langsung gunakan HTML dari detail
+        elements.popup.overlay.style.display = 'block';
+        elements.popup.container.style.display = 'block';
       }
     });
   },
@@ -147,8 +119,7 @@ const calendarManager = {
         title: `${data.peserta.slice(0, 2).join(', ')}${data.peserta.length > 2 ? ', ...' : ''}`,
         date: data.date, // Pastikan formatnya YYYY-MM-DD
         extendedProps: {
-          // Simpan data asli untuk digunakan di modal
-          originalData: { ...data, id: doc.id }
+          detail: `<strong>Kelas:</strong> ${data.className}<br><strong>Mata Kuliah:</strong> ${data.subject}<br><strong>Waktu:</strong> ${data.time || 'N/A'}<br><strong>Peserta:</strong> ${data.peserta.join(', ')}<br><strong>Materi:</strong> ${data.materi || 'Belum ada materi'}`
         }
       };
     });
@@ -211,78 +182,110 @@ const dataManager = {
 
   renderResults: (results, query) => {
     console.log("dataManager.renderResults - Input results:", results, "Query:", query);
-    if (!elements.scheduleGrid || !elements.emptyState) {
-        console.error("Elemen scheduleGrid atau emptyState tidak ditemukan!");
-        return;
-    }
-    elements.scheduleGrid.innerHTML = ''; 
-
-    if (results.length === 0) {
-      elements.emptyState.classList.add('active');
-      if (query) {
-        elements.emptyState.querySelector('h3').textContent = "Oops! Jadwal tidak ditemukan";
-        elements.emptyState.querySelector('p').textContent = "Coba kata kunci atau filter yang berbeda.";
-      } else {
-        elements.emptyState.querySelector('h3').textContent = "Belum Ada Jadwal";
-        elements.emptyState.querySelector('p').textContent = "Tidak ada jadwal yang tersedia saat ini atau cocok dengan filter Anda.";
-      }
-    } else {
-      elements.emptyState.classList.remove('active');
-    }
-    results.forEach((scheduleData) => { // scheduleData sudah termasuk id dari getFilteredDataFromFirestore
-      const { className, subject, date, peserta, materi, time, id } = scheduleData; // Destructure untuk kejelasan
+    elements.resultsDiv.innerHTML = '';
+    results.forEach(({ className, subject, date, peserta, materi, time }) => {
       const card = document.createElement('div');
-      card.className = 'schedule-card'; // Sesuai dengan CSS baru
-      // Struktur HTML kartu disesuaikan dengan kelas di style.css
+      card.className = 'result-card';
+      
       card.innerHTML = `
-        <div class="card-header">
-            <h3 class="course-title" data-schedule-id="${id}">${subject}</h3>
-            <span class="date-display" data-schedule-id="${id}">${utils.formatDate(date)}</span>
+        <div class="card-meta">
+          <i class="fa-solid fa-calendar-day"></i>
+          <span class="card-date">${utils.formatDate(date)}</span>
         </div>
-        <p class="institute" data-schedule-id="${id}">${className}</p>
-        ${materi ? `<div class="discussion-topic" data-schedule-id="${id}"><strong>Materi:</strong> ${materi}</div>` : ''}
-        <div class="participants">
-                ${peserta.map(name => 
-                    `<span class="participant-tag ${query && name.toLowerCase().includes(query.toLowerCase()) ? 'highlight' : ''}">${name}</span>`
-                ).join('')}
+        <div class="card-meta">
+          <i class="fa-solid fa-clock"></i>
+          <span>Waktu: ${time || 'N/A'}</span>
+        </div>
+        <div class="card-meta">
+          <i class="fa-solid fa-book"></i>
+          <span>${subject}</span>
+        </div>
+        <div class="card-group">
+          <i class="fa-solid fa-users"></i>
+          ${peserta.map(name => 
+            name.toLowerCase().includes(query) ? 
+            `<span class="highlight">${name}</span>` : name
+          ).join(', ')}
+        </div>
+        <div class="card-meta">
+          <i class="fa-solid fa-lightbulb"></i>
+          <span>Materi: ${materi || 'Belum ada materi'}</span>
+        </div>
+        <div class="card-meta">
+          <i class="fa-solid fa-chalkboard-user"></i>
+          <span>Kelas: ${className}</span>
         </div>
       `;
       
-      // Menjadikan seluruh kartu clickable untuk membuka modal
-      card.addEventListener('click', () => {
-          // Menggunakan scheduleData yang ditangkap oleh loop untuk modal
-          const modalContent = `
-            <div class="modal-item">
-              <div class="card-header">
-                  <h3 class="course-title">${scheduleData.subject}</h3>
-                  <span class="date-display">${utils.formatDate(scheduleData.date)}</span>
-              </div>
-              <p class="institute">${scheduleData.className}</p>
-              ${scheduleData.materi ? `<div class="discussion-topic"><strong>Materi:</strong> ${scheduleData.materi}</div>` : ''}
-              <div class="participants">
-                  ${scheduleData.peserta.map(name => `<span class="participant-tag">${name}</span>`).join('')}
-              </div>
-            </div>
-          `;
-          elements.popup.modalBody.innerHTML = modalContent;
-          if (elements.popup.modal) elements.popup.modal.classList.add('active');
-      });
-      elements.scheduleGrid.appendChild(card);
+      elements.resultsDiv.appendChild(card);
     });
   }
 };
 
 // Icon Toggle Manager for new icon controls
-// const iconToggleManager = { ... } // Logika ini digantikan oleh floating menu
+const iconToggleManager = {
+  init: () => {
+    const controls = [
+      { trigger: '#google-drive-control .icon-trigger-btn', content: '#driveDropdownContent' },
+      { trigger: '#class-filter-control .icon-trigger-btn', content: '#classSelectContent' },
+      { trigger: '#subject-filter-control .icon-trigger-btn', content: '#subjectSelectContent' },
+      { trigger: '#name-search-control .icon-trigger-btn', content: '#searchNameInputWrapper' }
+    ];
+
+    controls.forEach(control => {
+      const triggerEl = document.querySelector(control.trigger);
+      const contentEl = document.querySelector(control.content);
+
+      if (triggerEl && contentEl) {
+        triggerEl.addEventListener('click', (event) => {
+          event.stopPropagation(); // Prevent click from immediately closing via document listener
+          iconToggleManager.togglePanel(triggerEl, contentEl);
+        });
+      }
+    });
+
+    // Click outside to close any open panel
+    document.addEventListener('click', (event) => {
+      // Check if the click is outside all active panels and their triggers
+      if (!event.target.closest('.icon-control-wrapper')) {
+        iconToggleManager.closeAllPanels();
+      }
+    });
+  },
+
+  togglePanel: (triggerEl, contentEl) => {
+    const isActive = contentEl.classList.contains('active');
+    // First, close all other panels
+    document.querySelectorAll('.icon-control-wrapper .dropdown-panel.active, .icon-control-wrapper .input-panel.active').forEach(panel => {
+      if (panel !== contentEl) { // Don't close the current one if it's already open and we're re-clicking its trigger
+        panel.classList.remove('active');
+        const associatedTrigger = panel.closest('.icon-control-wrapper').querySelector('.icon-trigger-btn');
+        if (associatedTrigger) associatedTrigger.setAttribute('aria-expanded', 'false');
+      }
+    });
+    // Then, toggle the current panel
+    contentEl.classList.toggle('active', !isActive);
+    triggerEl.setAttribute('aria-expanded', String(!isActive));
+  },
+
+  closeAllPanels: () => {
+    document.querySelectorAll('.icon-control-wrapper .dropdown-panel.active, .icon-control-wrapper .input-panel.active').forEach(panel => {
+      panel.classList.remove('active');
+      const associatedTrigger = panel.closest('.icon-control-wrapper').querySelector('.icon-trigger-btn');
+      if (associatedTrigger) associatedTrigger.setAttribute('aria-expanded', 'false');
+    });
+  }
+};
 
 // UI Controller
 const uiController = {
   deferredPrompt: null, // Untuk menyimpan event beforeinstallprompt
-  currentView: 'grid', // 'grid' or 'calendar'
-  // isMenuInitialized: false, // Tidak lagi diperlukan
   init: async () => {
     // Tampilkan spinner loading awal
-    // if (elements.loadingIndicator) elements.loadingIndicator.classList.add('active'); // Dihapus
+    const initialSpinner = document.createElement('div');
+    initialSpinner.className = 'loading-spinner';
+    initialSpinner.style.display = 'block';
+    document.body.insertBefore(initialSpinner, document.querySelector('.container'));
     
     let persistenceEnabled = false;
     try {
@@ -312,96 +315,76 @@ const uiController = {
       console.log("Setting up Firestore onSnapshot listener for 'schedules' collection...");
       onSnapshot(query(schedulesCollection, orderBy("date")), (querySnapshot) => {
         console.log("Firestore snapshot diterima. Jumlah dokumen:", querySnapshot.size);
-        if (querySnapshot.metadata.hasPendingWrites) {
-            console.log("Data lokal (pending writes) diterima.");
-        } else {
-            console.log("Data dari server diterima.");
-        }
         allSchedulesFromFirestore = querySnapshot.docs;
-        // Penanganan empty state sekarang terpusat di renderResults
-        // if (querySnapshot.empty) {
-        //   console.warn("Tidak ada dokumen jadwal yang ditemukan di Firestore.");
-        // }
+        if (querySnapshot.empty) {
+          console.warn("Tidak ada dokumen jadwal yang ditemukan di Firestore.");
+          elements.resultsDiv.innerHTML = "<p>Tidak ada jadwal yang tersedia saat ini.</p>";
+        }
         // Pastikan allSchedulesFromFirestore adalah array sebelum dikirim
         uiController.processInitialData(allSchedulesFromFirestore); // Panggil ini hanya ketika data benar-benar ada
+        if (initialSpinner.parentNode) initialSpinner.remove();
       }, (error) => {
         console.error("Firestore onSnapshot error:", error);
         console.error("Error fetching schedules from Firestore: ", error);
-        if(elements.scheduleGrid) elements.scheduleGrid.innerHTML = "<p>Gagal memuat data jadwal. Silakan periksa koneksi Anda atau coba lagi nanti.</p>";
+        elements.resultsDiv.innerHTML = "<p>Gagal memuat data jadwal. Silakan periksa koneksi Anda atau coba lagi nanti.</p>";
+        if (initialSpinner.parentNode) initialSpinner.remove();
       });
     } catch (error) {
       console.error("Gagal setup listener Firestore (kesalahan lebih lanjut):", error);
+      if (initialSpinner.parentNode) initialSpinner.remove();
     }
 
-    // Event Listeners untuk UI Utama
-    // if (elements.menuToggle) elements.menuToggle.addEventListener('click', uiController.toggleMenu); // Dihapus
-    if (elements.searchInput) elements.searchInput.addEventListener('input', utils.debounce(uiController.handleSearch, 300));
-    if (elements.institutionFilter) elements.institutionFilter.addEventListener('change', uiController.handleClassChange);
-    if (elements.subjectFilter) elements.subjectFilter.addEventListener('change', uiController.handleSearch);
-    if (elements.themeToggle) elements.themeToggle.addEventListener('click', uiController.toggleTheme);
-    if (elements.driveToggleBtn) elements.driveToggleBtn.addEventListener('click', uiController.toggleDriveDropdown);
-    if (elements.gridViewBtn) elements.gridViewBtn.addEventListener('click', () => uiController.switchView('grid'));
-    if (elements.calendarViewBtn) elements.calendarViewBtn.addEventListener('click', () => uiController.switchView('calendar'));
+    // Event Listeners
+    elements.classSelect.addEventListener('change', uiController.handleClassChange);
+    elements.subjectSelect.addEventListener('change', uiController.handleSearch);
+    elements.nameInput.addEventListener('input', utils.debounce(uiController.handleSearch, 300));
+    elements.driveDropdown.addEventListener("change", uiController.handleDriveSelect);
+    // document.getElementById('close-popup').addEventListener('click', uiController.closePopup); // Sudah dihandle di HTML onclick
     
-    // Close modal
-    const modalOverlay = elements.popup.modal ? elements.popup.modal.querySelector('.modal-overlay') : null;
-    const closeModalBtn = elements.popup.modal ? elements.popup.modal.querySelector('.close-modal') : null;
-    if (modalOverlay) modalOverlay.addEventListener('click', uiController.closePopup);
-    if (closeModalBtn) closeModalBtn.addEventListener('click', uiController.closePopup);
+    // Listener untuk tombol tutup PWA Install Prompt
+    const closePwaInstallBtn = document.getElementById('closePwaInstallPromptBtn');
+    if (closePwaInstallBtn) {
+      closePwaInstallBtn.addEventListener('click', () => {
+        if (elements.pwaPopup) elements.pwaPopup.style.display = 'none';
+      });
+    }
 
-    // PWA Install
-    if (elements.installPwaBtn) elements.installPwaBtn.addEventListener('click', uiController.handlePWAInstall);
-    if (elements.dismissPwaBtn) elements.dismissPwaBtn.addEventListener('click', () => {
-      if (elements.pwaPopup) elements.pwaPopup.classList.add('hidden');
-    });
-
+    document.getElementById('add-to-home').addEventListener('click', uiController.handlePWAInstall);
     // Load Saved Preferences
     const savedClass = localStorage.getItem('selectedClass');
-    if(savedClass && elements.institutionFilter) elements.institutionFilter.value = savedClass;
-    uiController.loadTheme(); // Load saved theme
-    uiController.initPWA(); // Pindahkan inisialisasi PWA ke sini
-    // uiController.initFloatingMenu(); // Dihapus
+    if(savedClass) elements.classSelect.value = savedClass;    
 
-    uiController.switchView(localStorage.getItem('lastView') || 'grid'); // Load last view or default to grid
   },
 
   processInitialData: (schedulesDocs) => {
-    console.log("Memproses data awal. Jumlah dokumen diterima:", schedulesDocs ? schedulesDocs.length : 'null/undefined');
-    console.log("Data yang diterima di processInitialData:", schedulesDocs.map(doc => ({id: doc.id, ...doc.data()})));
-    // if (elements.loadingIndicator) elements.loadingIndicator.classList.remove('active'); // Dihapus
-
+    console.log("Memproses data awal. Jumlah dokumen diterima:", schedulesDocs.length);
     // Initialize Calendar
-    if (elements.calendarEl) {
-        calendarManager.init(schedulesDocs);
-    } else {
-        console.error("Elemen #calendar tidak ditemukan untuk FullCalendar.");
-    }
-
+    calendarManager.init(schedulesDocs);
     if (!calendarManager.calendarInstance) {
         console.error("Calendar instance GAGAL diinisialisasi di processInitialData.");
-        // Tetap lanjutkan untuk UI lain jika kalender gagal
+        return;
     }
-    if(calendarManager.calendarInstance) {
-        calendarManager.calendarInstance.render();
-    }
+    if(calendarManager.calendarInstance) calendarManager.calendarInstance.render();
     uiController.updateSubjects();
     uiController.handleSearch(); // Lakukan pencarian awal
 
-    // iconToggleManager.init(); // Ini sudah tidak digunakan
+    // Initialize PWA & Icon Toggles after data is processed and UI is ready
+    uiController.initPWA();
+    iconToggleManager.init();
   },
 
   handleClassChange: () => {
-    if (elements.institutionFilter) localStorage.setItem('selectedClass', elements.institutionFilter.value);
+    localStorage.setItem('selectedClass', elements.classSelect.value);
     uiController.updateSubjects();
     uiController.handleSearch();
   },
 
   updateSubjects: () => {
-    const selectedClass = elements.institutionFilter ? elements.institutionFilter.value : 'all';
+    const selectedClass = elements.classSelect.value;
     let subjects = [];
     console.log("updateSubjects - allSchedulesFromFirestore:", allSchedulesFromFirestore);
 
-    if (allSchedulesFromFirestore && allSchedulesFromFirestore.length > 0) {
+    if (allSchedulesFromFirestore.length > 0) {
       if (selectedClass === 'all') {
         subjects = [...new Set(allSchedulesFromFirestore.map(doc => doc.data().subject))];
       } else {
@@ -414,113 +397,55 @@ const uiController = {
       subjects.sort();
     }
         
-    if (elements.subjectFilter) {
-        elements.subjectFilter.innerHTML = '<option value="">Semua Mata Kuliah</option>';
-        subjects.forEach(subject => {
-          elements.subjectFilter.innerHTML += `<option value="${subject}">${subject}</option>`;
-        });
-    }
+    elements.subjectSelect.innerHTML = '<option value="">Semua Mata Kuliah</option>';
+    subjects.forEach(subject => {
+      elements.subjectSelect.innerHTML += `<option value="${subject}">${subject}</option>`;
+    });
   },
 
   handleSearch: () => {
     console.log("handleSearch dipanggil.");
-    const query = elements.searchInput ? elements.searchInput.value.trim().toLowerCase() : "";
+    const query = elements.nameInput.value.trim().toLowerCase();
+    const showCalendar = !query;
     
-    console.log("Filter saat ini: Kelas=", elements.institutionFilter ? elements.institutionFilter.value : 'N/A', "Subjek=", elements.subjectFilter ? elements.subjectFilter.value : 'N/A');
-    // if (elements.loadingIndicator) elements.loadingIndicator.classList.add('active'); // Dihapus
-    if (elements.scheduleGrid) elements.scheduleGrid.innerHTML = ''; 
+    // Toggle UI Elements
+    elements.calendarEl.style.display = showCalendar ? '' : 'none';
+    if(elements.printContainer) elements.printContainer.style.display = showCalendar ? '' : 'none';
+    
+    // Show Loading
+    const spinner = document.createElement('div');
+    spinner.className = 'loading-spinner';
+    elements.resultsDiv.innerHTML = '';
+    elements.resultsDiv.appendChild(spinner);
 
     console.log("handleSearch - allSchedulesFromFirestore sebelum filter:", allSchedulesFromFirestore);
     // Process Data
     const filteredData = dataManager.getFilteredDataFromFirestore(
       allSchedulesFromFirestore,
-      elements.institutionFilter ? elements.institutionFilter.value : 'all',
-      elements.subjectFilter ? elements.subjectFilter.value : '',
+      elements.classSelect.value,
+      elements.subjectSelect.value,
       query
     );
     // Render Results
-    console.log("Data setelah difilter (sebelum render):", filteredData);
     setTimeout(() => {
-      // if (elements.loadingIndicator) elements.loadingIndicator.classList.remove('active'); // Dihapus
+      spinner.remove();
       dataManager.renderResults(filteredData, query);
-      // Update calendar events if calendar is visible
-      if (uiController.currentView === 'calendar' && calendarManager.calendarInstance) {
-          calendarManager.rerenderEvents(filteredData); // Atau allSchedulesFromFirestore jika kalender tidak difilter nama
-      }
-      // Logika emptyState sudah ditangani di renderResults dengan:
-      // elements.emptyState.classList.toggle('active', results.length === 0 && query);
-      // Jika tidak ada query dan tidak ada hasil (data awal kosong), emptyState akan disembunyikan.
-      }
     }, 300);
   },
 
-  // toggleMenu: () => { // Dihapus
-  //   if (elements.floatingMenu) elements.floatingMenu.classList.toggle('active');
-  // },
-
-  toggleTheme: () => {
-    const currentTheme = document.documentElement.getAttribute('data-theme');
-    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-    document.documentElement.setAttribute('data-theme', newTheme);
-    localStorage.setItem('theme', newTheme);
-    // CSS akan menghandle perubahan ikon melalui atribut data-theme
-  },
-
-  loadTheme: () => {
-    const savedTheme = localStorage.getItem('theme');
-    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-    
-    if (savedTheme) {
-      document.documentElement.setAttribute('data-theme', savedTheme);
-    } else if (prefersDark) {
-      document.documentElement.setAttribute('data-theme', 'dark');
+  handleDriveSelect: function(event) {
+    const url = event.target.value;
+    if(url && url.startsWith('https://drive.google.com')) {
+      window.open(url, "_blank");
     } else {
-      document.documentElement.setAttribute('data-theme', 'light'); // Default ke light
+      alert('Link Google Drive tidak valid!');
     }
-    // CSS akan menghandle ikon berdasarkan atribut data-theme
+    event.target.selectedIndex = 0;
   },
-
-  toggleDriveDropdown: () => {
-    if (elements.driveDropdownMenu) elements.driveDropdownMenu.classList.toggle('active');
-  },
-
-  switchView: (view) => {
-    uiController.currentView = view;
-    if (view === 'grid') {
-      if (elements.scheduleGrid) elements.scheduleGrid.classList.add('active');
-      if (elements.calendarView) elements.calendarView.classList.remove('active');
-      if (elements.gridViewBtn) elements.gridViewBtn.classList.add('active');
-      if (elements.calendarViewBtn) elements.calendarViewBtn.classList.remove('active');
-      uiController.handleSearch(); // Refresh grid view
-      if (elements.emptyState && elements.scheduleGrid && elements.scheduleGrid.children.length === 0 && (!elements.searchInput || !elements.searchInput.value)) {
-          elements.emptyState.classList.remove('active');
-      }
-    } else if (view === 'calendar') {
-      if (elements.emptyState) elements.emptyState.classList.remove('active'); // Sembunyikan empty state di tampilan kalender
-      if (elements.scheduleGrid) elements.scheduleGrid.classList.remove('active');
-      if (elements.calendarView) elements.calendarView.classList.add('active');
-      if (elements.gridViewBtn) elements.gridViewBtn.classList.remove('active');
-      if (elements.calendarViewBtn) elements.calendarViewBtn.classList.add('active');
-      if (calendarManager.calendarInstance) {
-        calendarManager.rerenderEvents(allSchedulesFromFirestore); // Tampilkan semua di kalender
-        setTimeout(() => calendarManager.calendarInstance.render(), 0); // Force rerender
-      }
-    }
-    localStorage.setItem('lastView', view);
-  },
-
-  // handleDriveSelect: function(event) { // Fungsi ini tidak lagi relevan karena drive dropdown adalah link
-  //   const url = event.target.value;
-  //   if(url && url.startsWith('https://drive.google.com')) {
-  //     window.open(url, "_blank");
-  //   } else {
-  //     alert('Link Google Drive tidak valid!');
-  //   }
-  //   event.target.selectedIndex = 0;
-  // },
 
   closePopup: () => {
-    if (elements.popup.modal) elements.popup.modal.classList.remove('active');
+    elements.popup.overlay.style.display = 'none';
+    elements.popup.container.style.display = 'none';
   },
 
   initPWA: () => {
@@ -538,13 +463,13 @@ const uiController = {
 
   showInstallPrompt: () => {
     if(utils.detectIOS()) {
-      if (elements.pwaPopup) elements.pwaPopup.querySelector('p').textContent = 
+      elements.pwaPopup.querySelector('p').textContent = 
         'Untuk menambahkan ke Layar Utama: tekan tombol "Bagikan" lalu pilih "Tambah ke Layar Utama".';
-      if (elements.installPwaBtn) elements.installPwaBtn.style.display = 'none';
+      elements.pwaPopup.querySelector('#add-to-home').style.display = 'none';
     } else {
-      if (elements.installPwaBtn) elements.installPwaBtn.style.display = 'inline-block';
+      elements.pwaPopup.querySelector('#add-to-home').style.display = 'inline-block';
     }
-    if (elements.pwaPopup) elements.pwaPopup.classList.remove('hidden');
+    elements.pwaPopup.style.display = 'flex';
   },
 
   handlePWAInstall: async () => {
@@ -554,12 +479,8 @@ const uiController = {
       console.log(`User response: ${outcome}`);
       uiController.deferredPrompt = null; // Kosongkan setelah digunakan
     }
-    if (elements.pwaPopup) elements.pwaPopup.classList.add('hidden');
-  },
-
-  // Fungsi initFloatingMenu dan positionMenu dihapus
-  // initFloatingMenu: () => { ... },
-  // positionMenu: () => { ... },
+    elements.pwaPopup.style.display = 'none';
+  }
 };
 
 // Initialize Application
