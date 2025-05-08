@@ -134,33 +134,49 @@ const calendarManager = {
     if (!firestoreDocs || firestoreDocs.length === 0) return [];
 
     let relevantDocs = firestoreDocs;
+     // Jika ada pengguna yang login, filter dokumen untuk kalender
+     if (currentUser && currentUser.email) {
+      relevantDocs = firestoreDocs.filter(doc => {
+        const data = doc.data();
+        return data.peserta && data.peserta.some(p => p.toLowerCase().includes(currentUser.email.toLowerCase()));
+      });
+    }
     return relevantDocs.map(doc => {
       const data = doc.data();
       return {
         title: `${data.peserta.slice(0, 2).join(', ')}${data.peserta.length > 2 ? ', ...' : ''}`,
-    const today = new Date().setHours(0, 0, 0, 0);
-    const classes = selectedClass === 'all' ? Object.keys(dataByClass) : [selectedClass];
     
-    return classes.flatMap(className => {
-      const subjects = dataByClass[className] || {};
-      return Object.entries(subjects).flatMap(([subject, dates]) => {
-        if (selectedSubject && subject !== selectedSubject) return [];
-        return Object.entries(dates).flatMap(([date, entry]) => {
-          const eventDate = new Date(date).setHours(0,0,0,0);
-          if (eventDate < today) return [];
-          const hasMatch = nameQuery ? 
-            entry.peserta.some(name => name.toLowerCase().includes(nameQuery)) : true;
-          return hasMatch ? [{ className, subject, date, peserta: entry.peserta, materi: entry.materi, time: entry.time }] : [];
-        });
-      });
-    }).sort((a,b) => new Date(a.date) - new Date(b.date));
-  },
+        date: data.date, // Pastikan formatnya YYYY-MM-DD
+        extendedProps: {
+          detail: `<strong>Kelas:</strong> ${data.className}<br><strong>Mata Kuliah:</strong> ${data.subject}<br><strong>Waktu:</strong> ${data.time || 'N/A'}<br><strong>Peserta:</strong> ${data.peserta.join(', ')}<br><strong>Materi:</strong> ${data.materi || 'Belum ada materi'}`
+        }
+      };
+    });
+  }
+  // rerenderEvents dan penutup object calendarManager akan ada di bawah setelah perbaikan
+  // ... (kode _getFilteredDataFromLocalStructure dan dataManager tetap sama) ...
+}; // Penutup untuk calendarManager yang benar
 
-  rerenderEvents: (newFirestoreDocs) => {
-    if (calendarManager.calendarInstance) {
-      calendarManager.calendarInstance.removeAllEvents();
-      calendarManager.calendarInstance.addEventSource(calendarManager.generateEventsFromFirestore(newFirestoreDocs));
-    }
+// Data Manager
+// ... (kode dataManager tetap sama seperti yang Anda berikan, yang sudah terlihat baik) ...
+
+// Icon Toggle Manager
+// ... (kode iconToggleManager tetap sama) ...
+
+// UI Controller
+// ... (kode uiController tetap sama) ...
+
+// Auth Manager
+// ... (kode authManager tetap sama) ...
+
+// Initialize Application
+// ... (kode inisialisasi tetap sama) ...
+
+// Pastikan rerenderEvents ada di dalam calendarManager
+calendarManager.rerenderEvents = (newFirestoreDocs) => {
+  if (calendarManager.calendarInstance) {
+    calendarManager.calendarInstance.removeAllEvents();
+    calendarManager.calendarInstance.addEventSource(calendarManager.generateEventsFromFirestore(newFirestoreDocs));
   }
 };
 
@@ -411,6 +427,8 @@ const uiController = {
    // Event listeners untuk menu mobile
    elements.hamburgerBtn.addEventListener('click', uiController.toggleMobileMenu);
    elements.closeMobileMenuBtn.addEventListener('click', uiController.closeMobileMenu);
+
+  }, // Akhir dari uiController.init
 
   processInitialData: (schedulesDocs) => {
     // Jika belum ada pengguna yang login, atau jika data tidak bergantung pada pengguna,
@@ -731,3 +749,4 @@ const authManager = {
 // Initialize Application
 document.addEventListener('DOMContentLoaded', uiController.init); // Inisialisasi UI dan listener dasar
 onAuthStateChanged(auth, authManager.handleAuthStateChange); // Listener status autentikasi global
+
