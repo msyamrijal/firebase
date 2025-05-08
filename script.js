@@ -93,7 +93,9 @@ const calendarManager = {
         elements.popup.visibleTitle.textContent = 'Detail Jadwal Kalender'; // Set judul popup
         elements.popup.content.innerHTML = info.event.extendedProps.detail; // Langsung gunakan HTML dari detail
         elements.popup.overlay.style.display = 'block';
+        elements.popup.overlay.setAttribute('aria-hidden', 'false');
         elements.popup.container.style.display = 'block';
+        elements.popup.container.setAttribute('aria-hidden', 'false');
         elements.popup.content.focus(); // Fokus ke konten popup
       }
     });
@@ -349,6 +351,7 @@ const uiController = {
     elements.classSelect.addEventListener('change', uiController.handleClassChange);
     elements.subjectSelect.addEventListener('change', uiController.handleSearch);
     elements.nameInput.addEventListener('input', utils.debounce(uiController.handleSearch, 300));
+    elements.popup.overlay.addEventListener('click', uiController.closePopup); // Tambahkan listener untuk klik overlay
     elements.resultsDiv.addEventListener('click', uiController.handleDatacardClick); // Event delegation untuk klik datacard
     elements.driveDropdown.addEventListener("change", uiController.handleDriveSelect);
     // document.getElementById('close-popup').addEventListener('click', uiController.closePopup); // Sudah dihandle di HTML onclick
@@ -471,7 +474,9 @@ const uiController = {
       elements.popup.content.innerHTML = `<p>Tidak ada jadwal mendatang yang ditemukan untuk ${value}.</p>`;
     }
     elements.popup.overlay.style.display = 'block';
+    elements.popup.overlay.setAttribute('aria-hidden', 'false');
     elements.popup.container.style.display = 'block';
+    elements.popup.container.setAttribute('aria-hidden', 'false');
     elements.popup.content.focus();
   },
 
@@ -556,7 +561,9 @@ const uiController = {
 
   closePopup: () => {
     elements.popup.overlay.style.display = 'none';
+    elements.popup.overlay.setAttribute('aria-hidden', 'true');
     elements.popup.container.style.display = 'none';
+    elements.popup.container.setAttribute('aria-hidden', 'true');
     elements.popup.visibleTitle.textContent = 'Detail Jadwal'; // Reset judul
     elements.popup.content.innerHTML = ''; // Bersihkan konten
   },
