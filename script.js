@@ -81,7 +81,7 @@ const calendarManager = {
       headerToolbar: {
         left: 'prev,next today',
         center: 'title',
-        right: ''
+        right: 'dayGridMonth,timeGridWeek,listWeek' // Tambahkan opsi tampilan di sini
       },
       events: calendarManager.generateEventsFromFirestore(scheduleDocs),
       eventClick: (info) => {
