@@ -1,7 +1,7 @@
 // service-worker-registration.js
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
+    navigator.serviceWorker.register('/sw.js')    
       .then(registration => console.log('ServiceWorker registered'))
       .catch(err => console.log('ServiceWorker registration failed:', err));
   });
@@ -11,6 +11,7 @@ if ('serviceWorker' in navigator) {
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js"; // Pastikan ini diimpor
 import { getFirestore, collection, getDocs, onSnapshot, addDoc, doc, updateDoc, deleteDoc, query, orderBy, where, enableIndexedDbPersistence, CACHE_SIZE_UNLIMITED } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
+import { getDoc, setDoc } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
 
 // TODO: Ganti dengan konfigurasi Firebase proyek Anda
 const firebaseConfig = {
@@ -59,6 +60,7 @@ const elements = {
   closeMobileMenuBtn: document.getElementById('close-mobile-menu-btn'),
   loginBtn: document.getElementById('login-btn'), // Pastikan ini ada
   logoutBtn: document.getElementById('logout-btn') // Pastikan ini ada
+
 };
 
 // Utility Functions
@@ -656,6 +658,19 @@ const uiController = {
 };
 
 // Auth Manager
+
+// Add an event listener to the google login button
+const googleLoginButton = document.getElementById('google-login-button');
+if (googleLoginButton) {
+    googleLoginButton.addEventListener('click', authManager.signInWithGoogle);
+}
+
+
+
+
+
+
+
 const authManager = {
   signInWithGoogle: async () => {
     const provider = new GoogleAuthProvider();
@@ -663,6 +678,32 @@ const authManager = {
       const result = await signInWithPopup(auth, provider);
       // Pengguna berhasil login
       console.log("User signed in:", result.user);
+      console.log("User email:", result.user.email);
+      console.log("User UID:", result.user.uid);
+
+      // Check if user data exists in Firestore
+      const userRef = doc(db, "participants", result.user.uid);
+      const userSnap = await getDoc(userRef);
+
+      if (!userSnap.exists()) {
+        // If user data doesn't exist, add it
+        console.log("User data not found. Creating new user data.");
+        const userData = {
+          name: "Muhammad Syamsur Rijal", // Fixed name
+          email: result.user.email, // User's email
+        };
+        try {
+          await setDoc(userRef, userData);
+          console.log("New user data added to Firestore.");
+        } catch (error) {
+          console.error("Error adding new user data to Firestore:", error);
+          alert(`Gagal menyimpan data pengguna: ${error.message}`);
+        }
+      } else {
+        console.log("User data already exists.");
+      }
+
+
       // UI akan diupdate oleh onAuthStateChanged
     } catch (error) {
       console.error("Error signing in with Google:", error);
@@ -704,3 +745,4 @@ const authManager = {
 // Initialize Application
 document.addEventListener('DOMContentLoaded', uiController.init);
 onAuthStateChanged(auth, authManager.handleAuthStateChange); // Listener status autentikasi
+
