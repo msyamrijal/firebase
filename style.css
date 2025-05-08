@@ -103,7 +103,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center; /* Memusatkan grup tombol */
-  flex-grow: 1; 
+  flex-grow: 1; /* Mengambil sisa ruang agar bisa di tengah */
   gap: 0.5rem; /* Jarak antar setiap tombol/kontrol wrapper */
   flex-wrap: wrap; /* Izinkan pembungkusan jika tidak cukup ruang */
 }
