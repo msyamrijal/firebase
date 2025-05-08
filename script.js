@@ -1,6 +1,6 @@
 // service-worker-registration.js
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
+  window.addEventListener('load', async() => {
     navigator.serviceWorker.register('/sw.js')    
       .then(registration => console.log('ServiceWorker registered'))
       .catch(err => console.log('ServiceWorker registration failed:', err));
@@ -17,7 +17,7 @@ import { getDoc, setDoc } from "https://www.gstatic.com/firebasejs/9.6.10/fireba
 const firebaseConfig = {
   apiKey: "AIzaSyB-euXJz9b3HyfvjmG5tzu2wMqvbY3bH5E",
   authDomain: "jadwal-pemakalah-akademik.firebaseapp.com",
-  projectId: "jadwal-pemakalah-akademik",
+  projectId: "jadwal-pemakalah-akademik", 
   storageBucket: "jadwal-pemakalah-akademik.firebasestorage.app",
   messagingSenderId: "230646165475",
   appId: "1:230646165475:web:9f0ce777977eb2ddb07ad6",
@@ -134,24 +134,26 @@ const calendarManager = {
     if (!firestoreDocs || firestoreDocs.length === 0) return [];
 
     let relevantDocs = firestoreDocs;
-    // Jika ada pengguna yang login, filter dokumen untuk kalender
-    if (currentUser && currentUser.email) {
-      relevantDocs = firestoreDocs.filter(doc => {
-        const data = doc.data();
-        return data.peserta && data.peserta.some(p => p.toLowerCase().includes(currentUser.email.toLowerCase()));
-      });
-    }
     return relevantDocs.map(doc => {
       const data = doc.data();
       return {
         title: `${data.peserta.slice(0, 2).join(', ')}${data.peserta.length > 2 ? ', ...' : ''}`,
-        date: data.date, // Pastikan formatnya YYYY-MM-DD
-        extendedProps: {
-          detail: `<strong>Kelas:</strong> ${data.className}<br><strong>Mata Kuliah:</strong> ${data.subject}<br><strong>Waktu:</strong> ${data.time || 'N/A'}<br><strong>Peserta:</strong> ${data.peserta.join(', ')}<br><strong>Materi:</strong> ${data.materi || 'Belum ada materi'}`
-        }
-      };
-    });
-    // console.log("calendarManager.generateEventsFromFirestore - Output events:", generatedEvents); // Bisa di-uncomment jika perlu
+    const today = new Date().setHours(0, 0, 0, 0);
+    const classes = selectedClass === 'all' ? Object.keys(dataByClass) : [selectedClass];
+    
+    return classes.flatMap(className => {
+      const subjects = dataByClass[className] || {};
+      return Object.entries(subjects).flatMap(([subject, dates]) => {
+        if (selectedSubject && subject !== selectedSubject) return [];
+        return Object.entries(dates).flatMap(([date, entry]) => {
+          const eventDate = new Date(date).setHours(0,0,0,0);
+          if (eventDate < today) return [];
+          const hasMatch = nameQuery ? 
+            entry.peserta.some(name => name.toLowerCase().includes(nameQuery)) : true;
+          return hasMatch ? [{ className, subject, date, peserta: entry.peserta, materi: entry.materi, time: entry.time }] : [];
+        });
+      });
+    }).sort((a,b) => new Date(a.date) - new Date(b.date));
   },
 
   rerenderEvents: (newFirestoreDocs) => {
@@ -190,21 +192,17 @@ const dataManager = {
     
     let filteredSchedules = schedules.filter(doc => {
       const data = doc.data();
-      const eventDate = new Date(data.date).setHours(0,0,0,0);
+      const eventDate = new Date(data.date).setHours(0, 0, 0, 0);
       if (eventDate < today) return false;
-    
+
+      // Filter berdasarkan class
       if (selectedClass !== 'all' && data.className !== selectedClass) return false;
+      // Filter berdasarkan subject
       if (selectedSubject && data.subject !== selectedSubject) return false;
-    
-      if (nameQuery) {
-        const queryText = nameQuery.toLowerCase();
-        return data.peserta.some(name => name.toLowerCase().includes(queryText));
-      }
-      return true;
-    }).map(doc => { // Transformasi ke format yang diharapkan renderResults
-        const data = doc.data();
-        return { ...data, id: doc.id };
-    }).sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime()); // Pastikan perbandingan tanggal benar
+      // Filter berdasarkan nameQuery
+      const queryText = nameQuery ? nameQuery.toLowerCase() : '';
+      return !queryText || data.peserta.some(name => name.toLowerCase().includes(queryText));
+    }).map(doc => ({ ...doc.data(), id: doc.id })).sort((a, b) => new Date(a.date) - new Date(b.date));
     // console.log("dataManager.getFilteredDataFromFirestore - Output filteredData:", filteredSchedules); // Bisa di-uncomment
 
     // Jika ada pengguna yang login, filter lebih lanjut berdasarkan email pengguna di field peserta
@@ -328,6 +326,7 @@ const uiController = {
     initialSpinner.className = 'loading-spinner';
     initialSpinner.style.display = 'block';
     document.body.insertBefore(initialSpinner, document.querySelector('.container'));
+
     
     let persistenceEnabled = false;
     try {
@@ -351,41 +350,52 @@ const uiController = {
       // Namun, untuk saat ini, kita akan tetap mencoba mengambil data.
     }
 
-    // Selalu coba siapkan listener Firestore, baik persistence berhasil atau tidak (kecuali ada error fatal)
-    try {
-      const schedulesCollection = collection(db, "schedules");
-      console.log("Setting up Firestore onSnapshot listener for 'schedules' collection...");
-      onSnapshot(query(schedulesCollection, orderBy("date")), (querySnapshot) => {
-        console.log("Firestore snapshot diterima. Jumlah dokumen:", querySnapshot.size);
-        allSchedulesFromFirestore = querySnapshot.docs;
-        if (querySnapshot.empty) {
-          console.warn("Tidak ada dokumen jadwal yang ditemukan di Firestore.");
-          elements.resultsDiv.innerHTML = "<p>Tidak ada jadwal yang tersedia saat ini.</p>";
-        }
-        // Pastikan allSchedulesFromFirestore adalah array sebelum dikirim
-        uiController.processInitialData(allSchedulesFromFirestore); // Panggil ini hanya ketika data benar-benar ada
-        if (initialSpinner.parentNode) initialSpinner.remove();
-      }, (error) => {
-        console.error("Firestore onSnapshot error:", error);
-        console.error("Error fetching schedules from Firestore: ", error);
-        elements.resultsDiv.innerHTML = "<p>Gagal memuat data jadwal. Silakan periksa koneksi Anda atau coba lagi nanti.</p>";
-        if (initialSpinner.parentNode) initialSpinner.remove();
-      });
-    } catch (error) {
-      console.error("Gagal setup listener Firestore (kesalahan lebih lanjut):", error);
-      if (initialSpinner.parentNode) initialSpinner.remove();
-    }
+    // Event listeners untuk login/logout
+    elements.loginBtn.addEventListener('click', authManager.signInWithGoogle);
+    elements.logoutBtn.addEventListener('click', authManager.signOutUser);
 
-    // Event Listeners
-    elements.classSelect.addEventListener('change', uiController.handleClassChange);
-    elements.subjectSelect.addEventListener('change', uiController.handleSearch);
-    elements.nameInput.addEventListener('input', utils.debounce(uiController.handleSearch, 300));
-    elements.popup.overlay.addEventListener('click', uiController.closePopup); // Tambahkan listener untuk klik overlay
-    elements.resultsDiv.addEventListener('click', uiController.handleDatacardClick); // Event delegation untuk klik datacard
-    elements.driveDropdown.addEventListener("change", uiController.handleDriveSelect);
-    // document.getElementById('close-popup').addEventListener('click', uiController.closePopup); // Sudah dihandle di HTML onclick
-    
-    // Listener untuk tombol tutup PWA Install Prompt
+    //initialize auth state
+    onAuthStateChanged(auth, async(user) => {
+      authManager.handleAuthStateChange(user);
+      // Selalu coba siapkan listener Firestore, baik persistence berhasil atau tidak (kecuali ada error fatal)
+      try {
+        const schedulesCollection = collection(db, "schedules");
+        console.log("Setting up Firestore onSnapshot listener for 'schedules' collection...");
+        onSnapshot(query(schedulesCollection, orderBy("date")), (querySnapshot) => {
+          console.log("Firestore snapshot diterima. Jumlah dokumen:", querySnapshot.size);
+          allSchedulesFromFirestore = querySnapshot.docs;
+          if (querySnapshot.empty) {
+            console.warn("Tidak ada dokumen jadwal yang ditemukan di Firestore.");
+            elements.resultsDiv.innerHTML = "<p>Tidak ada jadwal yang tersedia saat ini.</p>";
+          }
+          // Pastikan allSchedulesFromFirestore adalah array sebelum dikirim
+          uiController.processInitialData(allSchedulesFromFirestore); // Panggil ini hanya ketika data benar-benar ada
+          if (initialSpinner.parentNode) initialSpinner.remove();
+        }, (error) => {
+          console.error("Firestore onSnapshot error:", error);
+          console.error("Error fetching schedules from Firestore: ", error);
+          elements.resultsDiv.innerHTML = "<p>Gagal memuat data jadwal. Silakan periksa koneksi Anda atau coba lagi nanti.</p>";
+          if (initialSpinner.parentNode) initialSpinner.remove();
+        });
+      } catch (error) {
+        console.error("Gagal setup listener Firestore (kesalahan lebih lanjut):", error);
+        if (initialSpinner.parentNode) initialSpinner.remove();
+      }
+
+      // Event Listeners
+      elements.classSelect.addEventListener('change', uiController.handleClassChange);
+      elements.subjectSelect.addEventListener('change', uiController.handleSearch);
+      elements.nameInput.addEventListener('input', utils.debounce(uiController.handleSearch, 300));
+      elements.popup.overlay.addEventListener('click', uiController.closePopup); // Tambahkan listener untuk klik overlay
+      elements.resultsDiv.addEventListener('click', uiController.handleDatacardClick); // Event delegation untuk klik datacard
+      elements.driveDropdown.addEventListener("change", uiController.handleDriveSelect);
+
+      const savedClass = localStorage.getItem('selectedClass');
+      if(savedClass) elements.classSelect.value = savedClass;    
+    });
+        }
+  ,
+  // Listener untuk tombol tutup PWA Install Prompt
     const closePwaInstallBtn = document.getElementById('closePwaInstallPromptBtn');
     if (closePwaInstallBtn) {
       // Pastikan elemen pwaPopup ada sebelum menambahkan event listener
@@ -400,21 +410,11 @@ const uiController = {
     document.getElementById('add-to-home').addEventListener('click', uiController.handlePWAInstall);
     // Load Saved Preferences
     // Tambahkan event listener untuk tombol view toggle
-    elements.viewToggleButtons.calendar.addEventListener('click', () => uiController.setView('calendar'));
-    elements.viewToggleButtons.datacard.addEventListener('click', () => uiController.setView('datacard'));
+    elements.viewToggleButtons.calendar.addEventListener('click', () => uiController.setView('calendar'));elements.viewToggleButtons.datacard.addEventListener('click', () => uiController.setView('datacard'));
 
-    // Event listeners untuk menu mobile
-    elements.hamburgerBtn.addEventListener('click', uiController.toggleMobileMenu);
-    elements.closeMobileMenuBtn.addEventListener('click', uiController.closeMobileMenu);
-    
-    // Event listeners untuk login/logout
-    elements.loginBtn.addEventListener('click', authManager.signInWithGoogle);
-    elements.logoutBtn.addEventListener('click', authManager.signOutUser);
-
-    const savedClass = localStorage.getItem('selectedClass');
-    if(savedClass) elements.classSelect.value = savedClass;    
-
-  },
+   // Event listeners untuk menu mobile
+   elements.hamburgerBtn.addEventListener('click', uiController.toggleMobileMenu);
+   elements.closeMobileMenuBtn.addEventListener('click', uiController.closeMobileMenu);
 
   processInitialData: (schedulesDocs) => {
     // Jika belum ada pengguna yang login, atau jika data tidak bergantung pada pengguna,
@@ -657,16 +657,6 @@ const uiController = {
   }
 };
 
-// Auth Manager
-
-// Add an event listener to the google login button
-const googleLoginButton = document.getElementById('google-login-button');
-if (googleLoginButton) {
-    googleLoginButton.addEventListener('click', authManager.signInWithGoogle);
-}
-
-
-
 
 
 
@@ -744,5 +734,5 @@ const authManager = {
 
 // Initialize Application
 document.addEventListener('DOMContentLoaded', uiController.init);
-onAuthStateChanged(auth, authManager.handleAuthStateChange); // Listener status autentikasi
+
 
