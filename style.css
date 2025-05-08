@@ -181,17 +181,16 @@ body {
   color: var(--color-primary);
 }
 
-.search-input { /* Updated styles for menu context */
-  width: 100%; /* Take full width within the menu */
-  padding: 0.8rem;
+.search-input {
+  padding: 0.75rem 1rem; /* Sesuaikan padding */
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   background-color: var(--color-surface);
   color: var(--color-text);
   font-size: 0.9rem;
-  box-shadow: none; /* Remove shadow, it's inside the menu */
   transition: border-color var(--transition), box-shadow var(--transition);
-  /* Removed absolute positioning, opacity, transform, visibility */
+  min-width: 180px; /* Beri lebar minimum */
+  flex-grow: 1; /* Izinkan untuk tumbuh jika ada ruang */
 }
 
 
@@ -246,60 +245,8 @@ body {
 /* ====================== */
 /* MAIN CONTENT */
 /* ====================== */
-.floating-menu {
-  position: fixed;
-  /* top: 20px; */  /* Dihapus, posisi diatur oleh JS */
-  /* right: 20px; */ /* Dihapus, posisi diatur oleh JS */
-  z-index: 1000;
-}
-
-/* Initial state for welcome animation */
-.floating-menu.welcome-animation {
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  /* Ensure these override any media query settings during animation */
-  right: auto;
-  bottom: auto;
-  /* Override JS positioning temporarily */
-}
-
-/* Apply pulse animation to the button during welcome */
-.floating-menu.welcome-animation .menu-toggle {
-  animation: welcomePulse 1s ease-in-out infinite alternate;
-  transform: scale(1.5); /* Start slightly larger */
-  width: 65px; /* Larger size during animation */
-  height: 65px;
-  border-width: 3px; /* Thicker border */
-}
-
-/* Style for the circular text SVG */
-.welcome-text-circle {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%) rotate(0deg); /* Start rotation */
-  width: 120px; /* Should match viewBox width */
-  height: 120px; /* Should match viewBox height */
-  pointer-events: none; /* Prevent SVG from blocking clicks */
-  opacity: 0; /* Hidden by default */
-  transition: opacity 0.3s ease;
-  color: var(--color-primary); /* Text color */
-  animation: rotateText 10s linear infinite; /* Add rotation animation */
-}
-
-/* Show and style text during welcome animation */
-.floating-menu.welcome-animation .welcome-text-circle {
-  opacity: 1;
-}
-
-.welcome-text-circle text {
-  font-size: 11px; /* Adjust font size as needed */
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 1.5px; /* Adjust letter spacing */
-}
-
+/* CSS untuk .floating-menu, .menu-toggle, .menu-content, .welcome-animation, .welcome-text-circle DIHAPUS */
+/* Anda bisa menghapus semua blok CSS yang berkaitan dengan elemen-elemen di atas */
 .menu-toggle {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
@@ -338,34 +285,6 @@ body {
   color: white;
 }
 
-.menu-content {
-  position: absolute;
-  top: 60px;
-  right: 0;
-  background: var(--color-surface);
-  border-radius: var(--radius-md);
-  padding: 1rem;
-  box-shadow: var(--shadow-md);
-  width: 250px;
-  display: none;
-  flex-direction: column; /* Ensure items stack vertically */
-  gap: 1rem;
-}
-
-.floating-menu.active .menu-content {
-  display: flex;
-}
-
-/* Style for the row containing theme toggle and view switcher */
-.menu-row {
-  position: relative; /* Needed for absolute positioning of dropdown */
-  display: flex;
-  justify-content: space-between; /* Posisikan item di ujung */
-  align-items: center; /* Ratakan item secara vertikal */
-  width: 100%; /* Ambil lebar penuh container */
-  gap: 0.5rem; /* Add some gap between items */
-}
-
 /* Google Drive Button Styles */
 .drive-container {
   position: relative; /* Context for the dropdown */
@@ -395,9 +314,11 @@ body {
 .drive-dropdown {
   display: none; /* Hidden by default */
   position: absolute;
-  bottom: calc(100% + 10px); /* Position above the button */
-  right: 50%; /* Center relative to the button */
-  transform: translateX(50%);
+  top: calc(100% + 10px); /* Position below the button */
+  left: 50%; /* Align to center of button */
+  transform: translateX(-50%); /* Adjust for centering */
+  right: auto;
+  bottom: auto;
   background-color: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
@@ -426,40 +347,9 @@ body {
   color: var(--color-primary);
 }
 
-/* Animation keyframes */
-@keyframes welcomePulse {
-  from {
-      transform: scale(1.4); /* Start slightly larger */
-  }
-  to {
-      transform: scale(1.6); /* Pulse larger */
-  }
-}
-
-/* Keyframes for text rotation */
-@keyframes rotateText {
-  from {
-      transform: translate(-50%, -50%) rotate(0deg);
-  }
-  to {
-      transform: translate(-50%, -50%) rotate(360deg);
-  }
-}
-
 .main-content {
   padding-top: 2.5rem;
   padding-bottom: 3rem;
-}
-
-@media (max-width: 768px) {
-  .floating-menu {
-      top: 10px;
-      right: 10px;
-  }
-
-  .menu-content {
-      width: 200px;
-  }
 }
 
 .schedule-grid {
@@ -1036,49 +926,10 @@ body {
 .hidden {
   display: none !important; /* Ensure it's hidden */
 }
-/* Tambahkan ini ke style.css Anda jika belum ada atau sesuaikan */
-.floating-menu.welcome-animation {
-  /* Posisi di tengah layar untuk animasi, override posisi default */
-  top: 50% !important;
-  left: 50% !important;
-  transform: translate(-50%, -50%) !important;
-  right: auto !important;
-  bottom: auto !important;
-}
 
-.floating-menu.welcome-animation .menu-toggle {
-  animation: welcomePulse 1.2s ease-in-out infinite alternate;
-  transform: scale(1.2); /* Sedikit lebih besar saat animasi */
-  width: 70px; /* Sesuaikan ukuran */
-  height: 70px;
-}
-
-.welcome-text-circle {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 120px; /* Sesuaikan dengan viewBox SVG */
-  height: 120px;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.5s ease-in-out;
-  animation: rotateText 20s linear infinite;
-}
-
-.floating-menu.welcome-animation .welcome-text-circle {
-  opacity: 1;
-}
-
-.welcome-text-circle text {
-  font-family: var(--font-primary); /* Gunakan variabel font Anda */
-  font-size: 10px; /* Sesuaikan */
-  font-weight: 600;
-  fill: var(--color-primary); /* Sesuaikan warna */
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-}
-
+/* Hapus @keyframes welcomePulse dan @keyframes rotateText jika hanya digunakan oleh floating menu */
+/* Jika masih ada, biarkan. Jika tidak, hapus blok @keyframes berikut: */
+/*
 @keyframes welcomePulse {
   from { transform: scale(1.2); box-shadow: 0 0 0 0 rgba(var(--color-primary-rgb), 0.4); }
   to { transform: scale(1.3); box-shadow: 0 0 0 15px rgba(var(--color-primary-rgb), 0); }
@@ -1088,19 +939,11 @@ body {
   from { transform: translate(-50%, -50%) rotate(0deg); }
   to { transform: translate(-50%, -50%) rotate(360deg); }
 }
+*/
 
-/* Untuk draggable cursor */
-.menu-toggle:active {
-  cursor: grabbing !important;
-}
 /* Tambahkan ke c:\Users\msyam\OneDrive\Alhamdulillah\Desktop\firebase\style.css jika perlu */
 .participant-tag.highlight {
   background-color: var(--color-accent); /* Atau warna highlight lain */
   color: var(--color-surface);
   font-weight: 600;
-}
-
-.floating-menu.dragging .menu-toggle {
-  cursor: grabbing !important;
-  /* Mungkin efek visual lain saat dragging */
 }

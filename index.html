@@ -22,52 +22,48 @@
 </head>
 
 <body>
-  <div class="floating-menu">
-      <button class="menu-toggle" aria-label="Toggle Menu">
-          <span class="assistive-icon"></span>
-          <!-- SVG for Circular Text (optional, bisa ditambahkan nanti jika diinginkan) -->
-      </button>
-      <div class="menu-content">
+  <header class="header container">
+    <div class="brand">
+      <span class="brand-icon"><i class="fas fa-calendar-check"></i></span>
+      <!-- Anda bisa menambahkan judul di sini jika mau, contoh: -->
+      <!-- <h1 class="brand-title">Jadwal Pemakalah</h1> -->
+    </div>
+    <div class="header-controls">
           <div class="search-container">
               <input type="text" id="searchInput" placeholder="Cari Jadwal..." class="search-input">
           </div>
           <select id="institutionFilter" class="institution-filter">
               <option value="all">Semua Kelas</option>
-              <!-- Opsi kelas akan diisi oleh JavaScript, mirip dengan class-select lama -->
               <option value="PTIQ">Kelas PTIQ H</option>
               <option value="PKU B">Kelas PKU B</option>
               <option value="PKUP">Kelas PKUP</option>
           </select>
-          <select id="subjectFilter" class="subject-filter">
+          <select id="subjectFilter" class="subject-filter institution-filter"> <!-- Menambahkan kelas institution-filter untuk styling konsisten -->
               <option value="">Semua Mata Kuliah</option>
-              <!-- Opsi mata kuliah akan diisi oleh JavaScript, mirip dengan subject-select lama -->
           </select>
-          <div class="menu-row">
-              <button id="themeToggle" class="theme-toggle" aria-label="Toggle Light/Dark Theme">
-                  <span class="theme-icon"></span> <!-- Icon akan dihandle CSS/JS -->
+          <button id="themeToggle" class="theme-toggle" aria-label="Toggle Light/Dark Theme">
+              <span class="theme-icon"></span>
+          </button>
+          <div class="drive-container">
+              <button id="driveToggleBtn" class="drive-toggle-btn" aria-label="Buka Link Drive">
+                  <i class="fab fa-google-drive"></i>
               </button>
-              <div class="drive-container">
-                  <button id="driveToggleBtn" class="drive-toggle-btn" aria-label="Buka Link Drive">
-                      <i class="fab fa-google-drive"></i>
-                  </button>
-                  <div id="driveDropdown" class="drive-dropdown">
-                      <a href="https://drive.google.com/drive/folders/12_mT3WcsuFeYOYfvuQnKjFH1B1dVgNyZ?usp=drive_link" target="_blank" rel="noopener noreferrer" class="drive-link">PKU B</a>
-                      <a href="https://drive.google.com/drive/folders/1La24Y-0DOPq5iJUUVg-UaF8gWEIsIqHQ?usp=drive_link" target="_blank" rel="noopener noreferrer" class="drive-link">PTIQ H</a>
-                      <a href="https://drive.google.com/drive/folders/1i83aR0pZj_lCFMaW6gSHAbXinvaQ3gFL?usp=drive_link" target="_blank" rel="noopener noreferrer" class="drive-link">PKUP</a>
-                      <!-- Tambahkan link drive lain jika ada -->
-                  </div>
-              </div>
-              <div class="view-switcher">
-                  <button id="gridViewBtn" class="view-btn active" aria-label="Grid View">
-                      <i class="fas fa-th-large"></i>
-                  </button>
-                  <button id="calendarViewBtn" class="view-btn" aria-label="Calendar View">
-                      <i class="fas fa-calendar-day"></i>
-                  </button>
+              <div id="driveDropdown" class="drive-dropdown">
+                  <a href="https://drive.google.com/drive/folders/12_mT3WcsuFeYOYfvuQnKjFH1B1dVgNyZ?usp=drive_link" target="_blank" rel="noopener noreferrer" class="drive-link">PKU B</a>
+                  <a href="https://drive.google.com/drive/folders/1La24Y-0DOPq5iJUUVg-UaF8gWEIsIqHQ?usp=drive_link" target="_blank" rel="noopener noreferrer" class="drive-link">PTIQ H</a>
+                  <a href="https://drive.google.com/drive/folders/1i83aR0pZj_lCFMaW6gSHAbXinvaQ3gFL?usp=drive_link" target="_blank" rel="noopener noreferrer" class="drive-link">PKUP</a>
               </div>
           </div>
+          <div class="view-switcher">
+              <button id="gridViewBtn" class="view-btn active" aria-label="Grid View">
+                  <i class="fas fa-th-large"></i>
+              </button>
+              <button id="calendarViewBtn" class="view-btn" aria-label="Calendar View">
+                  <i class="fas fa-calendar-day"></i>
+              </button>
+          </div>
       </div>
-  </div>
+  </header>
 
   <main class="main-content container">
       <!-- Calendar Container (disembunyikan awalnya jika grid view default) -->
