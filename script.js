@@ -354,12 +354,9 @@ const uiController = {
     elements.loginBtn.addEventListener('click', authManager.signInWithGoogle);
     elements.logoutBtn.addEventListener('click', authManager.signOutUser);
 
-    //initialize auth state
-    onAuthStateChanged(auth, async(user) => {
-      authManager.handleAuthStateChange(user);
-      // Selalu coba siapkan listener Firestore, baik persistence berhasil atau tidak (kecuali ada error fatal)
-      try {
-        const schedulesCollection = collection(db, "schedules");
+    // Pindahkan listener Firestore ke luar onAuthStateChanged jika data jadwal tidak bergantung pada user untuk pengambilan awal
+    try {
+      const schedulesCollection = collection(db, "schedules");
         console.log("Setting up Firestore onSnapshot listener for 'schedules' collection...");
         onSnapshot(query(schedulesCollection, orderBy("date")), (querySnapshot) => {
           console.log("Firestore snapshot diterima. Jumlah dokumen:", querySnapshot.size);
@@ -380,21 +377,20 @@ const uiController = {
       } catch (error) {
         console.error("Gagal setup listener Firestore (kesalahan lebih lanjut):", error);
         if (initialSpinner.parentNode) initialSpinner.remove();
-      }
+    }
 
-      // Event Listeners
-      elements.classSelect.addEventListener('change', uiController.handleClassChange);
-      elements.subjectSelect.addEventListener('change', uiController.handleSearch);
-      elements.nameInput.addEventListener('input', utils.debounce(uiController.handleSearch, 300));
-      elements.popup.overlay.addEventListener('click', uiController.closePopup); // Tambahkan listener untuk klik overlay
-      elements.resultsDiv.addEventListener('click', uiController.handleDatacardClick); // Event delegation untuk klik datacard
-      elements.driveDropdown.addEventListener("change", uiController.handleDriveSelect);
+    // Event Listeners UI (cukup di-set sekali)
+    elements.classSelect.addEventListener('change', uiController.handleClassChange);
+    elements.subjectSelect.addEventListener('change', uiController.handleSearch);
+    elements.nameInput.addEventListener('input', utils.debounce(uiController.handleSearch, 300));
+    elements.popup.overlay.addEventListener('click', uiController.closePopup);
+    elements.resultsDiv.addEventListener('click', uiController.handleDatacardClick);
+    elements.driveDropdown.addEventListener("change", uiController.handleDriveSelect);
 
-      const savedClass = localStorage.getItem('selectedClass');
-      if(savedClass) elements.classSelect.value = savedClass;    
-    });
-        }
-  ,
+    const savedClass = localStorage.getItem('selectedClass');
+    if(savedClass) elements.classSelect.value = savedClass;
+
+    // Listener PWA dan menu mobile bisa tetap di sini
   // Listener untuk tombol tutup PWA Install Prompt
     const closePwaInstallBtn = document.getElementById('closePwaInstallPromptBtn');
     if (closePwaInstallBtn) {
@@ -733,6 +729,5 @@ const authManager = {
 };
 
 // Initialize Application
-document.addEventListener('DOMContentLoaded', uiController.init);
-
-
+document.addEventListener('DOMContentLoaded', uiController.init); // Inisialisasi UI dan listener dasar
+onAuthStateChanged(auth, authManager.handleAuthStateChange); // Listener status autentikasi global
