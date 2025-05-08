@@ -130,7 +130,16 @@ const calendarManager = {
   generateEventsFromFirestore: (firestoreDocs) => {
     console.log("calendarManager.generateEventsFromFirestore - Input docs:", firestoreDocs);
     if (!firestoreDocs || firestoreDocs.length === 0) return [];
-    return firestoreDocs.map(doc => {
+
+    let relevantDocs = firestoreDocs;
+    // Jika ada pengguna yang login, filter dokumen untuk kalender
+    if (currentUser && currentUser.email) {
+      relevantDocs = firestoreDocs.filter(doc => {
+        const data = doc.data();
+        return data.peserta && data.peserta.some(p => p.toLowerCase().includes(currentUser.email.toLowerCase()));
+      });
+    }
+    return relevantDocs.map(doc => {
       const data = doc.data();
       return {
         title: `${data.peserta.slice(0, 2).join(', ')}${data.peserta.length > 2 ? ', ...' : ''}`,
@@ -194,7 +203,7 @@ const dataManager = {
         const data = doc.data();
         return { ...data, id: doc.id };
     }).sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime()); // Pastikan perbandingan tanggal benar
-    // console.log("dataManager.getFilteredDataFromFirestore - Output filteredData:", filteredData); // Bisa di-uncomment
+    // console.log("dataManager.getFilteredDataFromFirestore - Output filteredData:", filteredSchedules); // Bisa di-uncomment
 
     // Jika ada pengguna yang login, filter lebih lanjut berdasarkan email pengguna di field peserta
     if (currentUser && currentUser.email) {
@@ -395,6 +404,10 @@ const uiController = {
     // Event listeners untuk menu mobile
     elements.hamburgerBtn.addEventListener('click', uiController.toggleMobileMenu);
     elements.closeMobileMenuBtn.addEventListener('click', uiController.closeMobileMenu);
+    
+    // Event listeners untuk login/logout
+    elements.loginBtn.addEventListener('click', authManager.signInWithGoogle);
+    elements.logoutBtn.addEventListener('click', authManager.signOutUser);
 
     const savedClass = localStorage.getItem('selectedClass');
     if(savedClass) elements.classSelect.value = savedClass;    
@@ -402,6 +415,9 @@ const uiController = {
   },
 
   processInitialData: (schedulesDocs) => {
+    // Jika belum ada pengguna yang login, atau jika data tidak bergantung pada pengguna,
+    // kita bisa langsung proses. Jika data bergantung pada pengguna,
+    // pemanggilan ini mungkin perlu ditunda atau dipanggil ulang setelah login.
     console.log("Memproses data awal. Jumlah dokumen diterima:", schedulesDocs.length);
     // Initialize Calendar
     calendarManager.init(schedulesDocs); // Inisialisasi data kalender
@@ -639,5 +655,52 @@ const uiController = {
   }
 };
 
+// Auth Manager
+const authManager = {
+  signInWithGoogle: async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      const result = await signInWithPopup(auth, provider);
+      // Pengguna berhasil login
+      console.log("User signed in:", result.user);
+      // UI akan diupdate oleh onAuthStateChanged
+    } catch (error) {
+      console.error("Error signing in with Google:", error);
+      alert(`Gagal login dengan Google: ${error.message}`);
+    }
+  },
+
+  signOutUser: async () => {
+    try {
+      await signOut(auth);
+      console.log("User signed out");
+      // UI akan diupdate oleh onAuthStateChanged
+    } catch (error) {
+      console.error("Error signing out:", error);
+      alert(`Gagal logout: ${error.message}`);
+    }
+  },
+
+  handleAuthStateChange: (user) => {
+    currentUser = user; // Update global currentUser
+    if (user) {
+      // Pengguna login
+      elements.loginBtn.style.display = 'none';
+      elements.logoutBtn.style.display = 'block';
+      elements.logoutBtn.textContent = `Logout (${user.email.split('@')[0]})`; // Tampilkan bagian email sebelum @
+      console.log("Auth state changed: User is logged in", user);
+    } else {
+      // Pengguna logout
+      elements.loginBtn.style.display = 'block';
+      elements.logoutBtn.style.display = 'none';
+      console.log("Auth state changed: User is logged out");
+    }
+    // Setelah status auth berubah, muat ulang atau filter data
+    uiController.handleSearch(); // Ini akan memfilter data berdasarkan currentUser yang baru
+    calendarManager.rerenderEvents(allSchedulesFromFirestore); // Update kalender juga
+  }
+};
+
 // Initialize Application
 document.addEventListener('DOMContentLoaded', uiController.init);
+onAuthStateChanged(auth, authManager.handleAuthStateChange); // Listener status autentikasi
