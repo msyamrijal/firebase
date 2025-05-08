@@ -238,9 +238,10 @@ const dataManager = {
 const iconToggleManager = {
   init: () => {
     const controls = [
-      { trigger: '#google-drive-control .control-trigger-btn', content: '#driveDropdownContent' },
-      { trigger: '#class-filter-control .control-trigger-btn', content: '#classSelectContent' },
-      { trigger: '#subject-filter-control .control-trigger-btn', content: '#subjectSelectContent' },
+      // Tombol Drive, Kelas, dan Matkul tidak lagi dikelola di sini karena select langsung digunakan
+      // { trigger: '#google-drive-control .control-trigger-btn', content: '#driveDropdownContent' }, // Dihapus
+      // { trigger: '#class-filter-control .control-trigger-btn', content: '#classSelectContent' }, // Dihapus
+      // { trigger: '#subject-filter-control .control-trigger-btn', content: '#subjectSelectContent' }, // Dihapus
       { trigger: '#name-search-control .control-trigger-btn', content: '#searchNameInputWrapper' }
     ];
 

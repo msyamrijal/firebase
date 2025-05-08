@@ -30,11 +30,8 @@
         <!-- Kontrol akan langsung di sini -->
           <!-- Google Drive Icon Control -->
           <div class="icon-control-wrapper" id="google-drive-control">
-            <button class="control-trigger-btn" aria-label="Akses Google Drive" aria-expanded="false" aria-controls="driveDropdownContent">
-              Drive
-            </button>
-            <div class="dropdown-panel" id="driveDropdownContent">
-              <select id="driveDropdown" aria-label="Pilih kelas untuk mengakses Google Drive">
+            <!-- Tombol pemicu dan panel dihapus, select langsung di sini -->
+            <select id="driveDropdown" class="select-as-button" aria-label="Pilih Kelas Drive">
                 <option value="">-- Pilih Kelas Drive --</option>
                 <option value="https://drive.google.com/drive/folders/12_mT3WcsuFeYOYfvuQnKjFH1B1dVgNyZ?usp=drive_link">
                   PKU B
@@ -45,37 +42,28 @@
                 <option value="https://drive.google.com/drive/folders/1i83aR0pZj_lCFMaW6gSHAbXinvaQ3gFL?usp=drive_link">
                   PKUP
                 </option>
-              </select>
-            </div>
+            </select>
           </div>
 
           <!-- Class Selector -->
           <div class="icon-control-wrapper" id="class-filter-control">
-            <button class="control-trigger-btn" aria-label="Pilih Kelas" aria-expanded="false" aria-controls="classSelectContent">
-              Kelas
-            </button>
-            <div class="dropdown-panel" id="classSelectContent">
-              <label for="class-select" class="sr-only">Pilih Kelas</label>
-              <select id="class-select" aria-label="Pilih kelas">
+            <!-- Tombol pemicu dan panel dihapus, select langsung di sini -->
+            <label for="class-select" class="sr-only">Pilih Kelas</label>
+            <select id="class-select" class="select-as-button" aria-label="Pilih Kelas">
                 <option value="all">Semua Kelas</option>
                 <option value="PTIQ">Kelas PTIQ H</option>
                 <option value="PKU B">Kelas PKU B</option>
                 <option value="PKUP">Kelas PKUP</option>
-              </select>
-            </div>
+            </select>
           </div>
 
           <!-- Subject Selector Icon Control -->
           <div class="icon-control-wrapper" id="subject-filter-control">
-            <button class="control-trigger-btn" aria-label="Pilih Mata Kuliah" aria-expanded="false" aria-controls="subjectSelectContent">
-              Matkul
-            </button>
-            <div class="dropdown-panel" id="subjectSelectContent">
-              <label for="subject-select" class="sr-only">Pilih Mata Kuliah</label>
-              <select id="subject-select" aria-label="Pilih mata kuliah">
+            <!-- Tombol pemicu dan panel dihapus, select langsung di sini -->
+            <label for="subject-select" class="sr-only">Pilih Mata Kuliah</label>
+            <select id="subject-select" class="select-as-button" aria-label="Pilih Mata Kuliah">
                 <option value="">Semua Mata Kuliah</option>
-              </select>
-            </div>
+            </select>
           </div>
 
           <!-- Name Search Icon Control -->

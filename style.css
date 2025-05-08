@@ -121,14 +121,14 @@ body {
 select, 
 .dropdown-panel input[type="text"],
 .input-panel input[type="text"] {
-  width: 100%;
+  /* width: 100%; Dihapus agar bisa diatur oleh .select-as-button */
   padding: 0.75rem; /* Simplified padding */
   border: 2px solid #e2e8f0;
   border-radius: var(--radius);
   font-size: 1rem;
   background: var(--card-bg);
   transition: var(--transition);
-  appearance: none;
+  appearance: none; /* Pastikan ini ada */
 }
 
 select:focus,
@@ -144,6 +144,38 @@ button:focus-visible {
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(99,102,241,0.2);
   /* Atau gaya fokus kustom lainnya */
+}
+
+/* Gaya untuk select yang ingin terlihat seperti tombol */
+.select-as-button {
+  background-color: var(--card-bg);
+  border: 1px solid var(--secondary);
+  color: var(--primary);
+  padding: 0.4rem 2rem 0.4rem 0.9rem; /* Padding kanan lebih besar untuk ruang panah */
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: var(--transition);
+  font-size: 0.8rem;
+  font-weight: 500;
+  white-space: nowrap;
+  appearance: none; /* Hapus tampilan default browser */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23FF7F50'%3E%3Cpath fill-rule='evenodd' d='M4.22 6.22a.75.75 0 0 1 1.06 0L8 8.94l2.72-2.72a.75.75 0 1 1 1.06 1.06l-3.25 3.25a.75.75 0 0 1-1.06 0L4.22 7.28a.75.75 0 0 1 0-1.06Z'/%3E%3C/svg%3E"); /* Panah SVG, warna #FF7F50 (var(--primary)) */
+  background-repeat: no-repeat;
+  background-position: right 0.5rem center;
+  background-size: 1em 1em;
+  line-height: normal; /* Atur line-height agar teks dan panah sejajar */
+  min-width: 100px; /* Beri lebar minimum agar tidak terlalu kecil */
+}
+
+.select-as-button:hover,
+.select-as-button:focus {
+  background-color: var(--secondary);
+  color: var(--accent);
+  border-color: var(--secondary);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 127, 80, 0.3); /* Sesuaikan warna shadow fokus */
 }
 
 /* Icon Control Styles */
@@ -167,7 +199,7 @@ button:focus-visible {
   font-weight: 500; /* Samakan dengan .view-toggle-btn */
   white-space: nowrap;
 }
-.control-trigger-btn:hover,
+.control-trigger-btn:hover, /* Gaya ini hanya untuk tombol "Cari" sekarang */
 .control-trigger-btn:focus {
   background: var(--secondary);
   color: var(--accent);
@@ -175,7 +207,7 @@ button:focus-visible {
   box-shadow: 0 0 0 3px rgba(212, 163, 115, 0.2); /* Accent focus */
 }
 /* Tambahkan gaya aktif jika diperlukan, mirip dengan .view-toggle-btn.active */
-.control-trigger-btn[aria-expanded="true"] {
+.control-trigger-btn[aria-expanded="true"] { /* Gaya ini hanya untuk tombol "Cari" sekarang */
   background-color: var(--secondary); /* Atau warna lain untuk menandakan aktif */
   color: var(--accent);
   /* box-shadow: 0 2px 4px rgba(74, 64, 58, 0.1); */ /* Opsional: shadow saat aktif */
