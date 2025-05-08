@@ -1,13 +1,13 @@
 :root {
-  --primary: #A0A083; /* Muted Olive Green */
-  --secondary: #C7C7B2; /* Lighter Olive/Beige */
-  --accent: #D4A373; /* Soft Terracotta/Ochre */
-  --background: #F5F5DC; /* Beige */
-  --card-bg: #FAF0E6; /* Linen / Very Light Cream */
-  --text: #4A403A; /* Dark Brown */
-  --text-light: #7B6D64; /* Lighter Brown */
-  --gradient: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-  --shadow: 0 4px 6px rgba(74, 64, 58, 0.1), 0 2px 4px rgba(74, 64, 58, 0.06);
+  --primary: #FF7F50; /* Coral (Oranye Utama) */
+  --secondary: #FFA07A; /* Light Salmon (Oranye Lebih Muda) */
+  --accent: #FF6347; /* Tomato (Oranye Kemerahan untuk Aksen Kuat) */
+  --background: #FFFFFF; /* Putih */
+  --card-bg: #FFF5EE; /* SeaShell (Putih dengan sedikit nuansa oranye/peach untuk kartu) */
+  --text: #333333; /* Abu-abu Tua (untuk kontras yang baik dengan putih) */
+  --text-light: #777777; /* Abu-abu Lebih Muda */
+  --gradient: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); /* Gradient Oranye */
+  --shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 2px 4px rgba(0, 0, 0, 0.04); /* Shadow lebih halus untuk background putih */
   --radius: 12px;
   --transition: all 0.3s ease;
 }
@@ -69,7 +69,7 @@ body {
 .title {
   font-size: 2.5rem;
   font-weight: 700;
-  background: var(--gradient);
+  /* background: var(--gradient); // Mungkin tidak perlu gradien jika ingin lebih minimalis */
   -webkit-background-clip: text;
   /* -webkit-text-fill-color: transparent; Dihapus untuk judul header baru */
   margin-bottom: 1.5rem;
@@ -82,7 +82,7 @@ body {
   background-color: var(--background);
   padding: 0.4rem 0.75rem; /* Lebih ramping lagi */
   z-index: 950; /* Above content, below popups */
-  box-shadow: 0 1px 3px rgba(74, 64, 58, 0.06); /* Shadow lebih halus */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); /* Shadow disesuaikan untuk background putih */
   margin-bottom: 1.5rem; /* Space to content below when not sticky or at initial load */
   display: flex;
   align-items: center;
@@ -135,7 +135,7 @@ select:focus,
 .dropdown-panel input[type="text"]:focus,
 input[type="text"]:focus {
   outline: none;
-  border-color: var(--accent);
+  border-color: var(--primary); /* Gunakan primary oranye untuk border fokus */
   box-shadow: 0 0 0 3px rgba(212, 163, 115, 0.2);
 }
 
@@ -171,7 +171,7 @@ button:focus-visible {
 .control-trigger-btn:focus {
   background: var(--secondary);
   color: var(--accent);
-  outline: none;
+  outline: none; /* Pastikan outline: none; */
   box-shadow: 0 0 0 3px rgba(212, 163, 115, 0.2); /* Accent focus */
 }
 /* Tambahkan gaya aktif jika diperlukan, mirip dengan .view-toggle-btn.active */
@@ -190,7 +190,7 @@ button:focus-visible {
   transform: translateX(-50%); /* Center below icon */
   background: var(--card-bg);
   border-radius: var(--radius);
-  box-shadow: 0 6px 12px rgba(74, 64, 58, 0.15); /* Adjusted shadow color */
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1); /* Shadow disesuaikan */
   padding: 1rem;
       z-index: 960; /* Lebih tinggi dari stack-header (950) */
   min-width: 220px; /* Kurangi lebar minimum dropdown jika perlu */
@@ -229,7 +229,7 @@ button:focus-visible {
   background: var(--secondary); /* Samakan dengan hover .control-trigger-btn */
   color: var(--accent); /* Samakan dengan hover .control-trigger-btn */
   outline: none; /* Hapus outline default, gunakan box-shadow untuk fokus */
-  box-shadow: 0 0 0 3px rgba(212, 163, 115, 0.2); /* Samakan dengan focus .control-trigger-btn */
+  box-shadow: 0 0 0 3px rgba(255, 127, 80, 0.3); /* Sesuaikan warna shadow fokus dengan tema oranye */
 }
 
 .view-toggle-btn.active {
@@ -268,7 +268,7 @@ button:focus-visible {
 
 .result-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 16px rgba(160, 160, 131, 0.15);
+  box-shadow: 0 8px 16px rgba(255, 127, 80, 0.1); /* Shadow hover kartu dengan nuansa oranye */
 }
 
 /* Card Elements */
@@ -282,7 +282,7 @@ button:focus-visible {
 
 .card-meta i {
   font-size: 1.1rem;
-  color: var(--accent);
+  color: var(--primary); /* Ikon menggunakan warna oranye utama */
 }
 
 .card-date {
@@ -292,15 +292,15 @@ button:focus-visible {
 
 .card-group {
   padding: 0.75rem;
-  background: rgba(160, 160, 131, 0.08); /* Lighter primary with low opacity */
+  background: rgba(255, 127, 80, 0.05); /* Background grup dengan nuansa oranye sangat tipis */
   border-radius: 8px;
   font-size: 0.95rem;
   color: var(--text);
 }
 
 .highlight {
-  background: rgba(212, 163, 115, 0.2); /* Accent with low opacity */
-  color: var(--accent);
+  background: rgba(255, 99, 71, 0.2); /* Highlight dengan warna oranye kemerahan (Tomato) tipis */
+  color: var(--accent); /* Teks highlight menggunakan warna aksen oranye */
   padding: 0.1rem 0.3rem;
   border-radius: 4px;
 }
@@ -308,7 +308,7 @@ button:focus-visible {
 /* Clickable items in datacard */
 .clickable-item {
   cursor: pointer;
-  text-decoration: underline;
+  /* text-decoration: underline; // Bisa dihilangkan jika ingin lebih bersih */
   color: var(--accent);
   transition: color 0.2s ease;
 }
@@ -337,7 +337,7 @@ button:focus-visible {
   transform: translate(-50%, -50%);
   background: var(--card-bg);
   padding: 2rem;
-  border-radius: var(--radius);
+  border-radius: var(--radius); 
   box-shadow: var(--shadow);
   z-index: 1000;
   max-width: 90%;
@@ -346,7 +346,7 @@ button:focus-visible {
 
 .popup-main-title {
   font-size: 1.4rem; /* Adjusted size */
-  color: var(--primary);
+  color: var(--primary); /* Judul popup dengan warna oranye utama */
   margin-bottom: 1rem;
   text-align: center;
 }
@@ -372,7 +372,7 @@ button:focus-visible {
 }
 
 .related-schedules-list li {
-  background-color: rgba(160, 160, 131, 0.05);
+  background-color: rgba(255, 127, 80, 0.03); /* Background item list dengan nuansa oranye sangat tipis */
   padding: 0.85rem; /* Slightly more padding */
   border-radius: var(--radius); /* Consistent radius */
   margin-bottom: 0.75rem;
