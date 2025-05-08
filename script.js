@@ -50,7 +50,10 @@ const elements = {
   viewToggleButtons: { // Tambahkan elemen tombol view
     calendar: document.getElementById('show-calendar-btn'),
     datacard: document.getElementById('show-datacard-btn')
-  }
+  },
+  hamburgerBtn: document.getElementById('hamburger-menu-btn'),
+  mobileMenuPanel: document.getElementById('mobile-menu-panel'),
+  closeMobileMenuBtn: document.getElementById('close-mobile-menu-btn')
 };
 
 // Utility Functions
@@ -375,6 +378,10 @@ const uiController = {
     elements.viewToggleButtons.calendar.addEventListener('click', () => uiController.setView('calendar'));
     elements.viewToggleButtons.datacard.addEventListener('click', () => uiController.setView('datacard'));
 
+    // Event listeners untuk menu mobile
+    elements.hamburgerBtn.addEventListener('click', uiController.toggleMobileMenu);
+    elements.closeMobileMenuBtn.addEventListener('click', uiController.closeMobileMenu);
+
     const savedClass = localStorage.getItem('selectedClass');
     if(savedClass) elements.classSelect.value = savedClass;    
 
@@ -599,6 +606,20 @@ const uiController = {
       const { outcome } = await uiController.deferredPrompt.userChoice;
       console.log(`User response: ${outcome}`);
       uiController.deferredPrompt = null; // Kosongkan setelah digunakan
+    }
+    elements.pwaPopup.style.display = 'none';
+  },
+
+  toggleMobileMenu: () => {
+    const isActive = elements.mobileMenuPanel.classList.contains('active');
+    elements.mobileMenuPanel.classList.toggle('active', !isActive);
+    elements.hamburgerBtn.setAttribute('aria-expanded', String(!isActive));
+    elements.mobileMenuPanel.setAttribute('aria-hidden', String(isActive));
+  },
+
+  closeMobileMenu: () => {
+    if (elements.mobileMenuPanel.classList.contains('active')) {
+      uiController.toggleMobileMenu(); // Gunakan toggle untuk konsistensi state aria
     }
     elements.pwaPopup.style.display = 'none';
   }

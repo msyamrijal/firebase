@@ -26,62 +26,65 @@
     <!-- Header Section -->
     <div id="stack-header">
       <h1 id="header-app-title">PKUMI.06</h1>
-      <div class="header-controls-wrapper">
-        <!-- Kontrol akan langsung di sini -->
-          <!-- Google Drive Icon Control -->
-          <div class="icon-control-wrapper" id="google-drive-control">
-            <!-- Tombol pemicu dan panel dihapus, select langsung di sini -->
-            <select id="driveDropdown" class="select-as-button" aria-label="Pilih Kelas Drive">
-                <option value="">-- Pilih Kelas Drive --</option>
-                <option value="https://drive.google.com/drive/folders/12_mT3WcsuFeYOYfvuQnKjFH1B1dVgNyZ?usp=drive_link">
-                  PKU B
-                </option>
-                <option value="https://drive.google.com/drive/folders/1La24Y-0DOPq5iJUUVg-UaF8gWEIsIqHQ?usp=drive_link">
-                  PTIQ H
-                </option>
-                <option value="https://drive.google.com/drive/folders/1i83aR0pZj_lCFMaW6gSHAbXinvaQ3gFL?usp=drive_link">
-                  PKUP
-                </option>
-            </select>
-          </div>
-
-          <!-- Class Selector -->
-          <div class="icon-control-wrapper" id="class-filter-control">
-            <!-- Tombol pemicu dan panel dihapus, select langsung di sini -->
-            <label for="class-select" class="sr-only">Pilih Kelas</label>
-            <select id="class-select" class="select-as-button" aria-label="Pilih Kelas">
-                <option value="all">Semua Kelas</option>
-                <option value="PTIQ">Kelas PTIQ H</option>
-                <option value="PKU B">Kelas PKU B</option>
-                <option value="PKUP">Kelas PKUP</option>
-            </select>
-          </div>
-
-          <!-- Subject Selector Icon Control -->
-          <div class="icon-control-wrapper" id="subject-filter-control">
-            <!-- Tombol pemicu dan panel dihapus, select langsung di sini -->
-            <label for="subject-select" class="sr-only">Pilih Mata Kuliah</label>
-            <select id="subject-select" class="select-as-button" aria-label="Pilih Mata Kuliah">
-                <option value="">Semua Mata Kuliah</option>
-            </select>
-          </div>
-
-          <!-- Name Search Icon Control -->
-          <div class="icon-control-wrapper" id="name-search-control">
-            <button class="control-trigger-btn" aria-label="Cari Nama" aria-expanded="false" aria-controls="searchNameInputWrapper">
-              Cari
-            </button>
-            <div class="input-panel" id="searchNameInputWrapper">
-              <label for="search-name" class="sr-only">Cari Nama</label>
-              <input type="text" 
-                     id="search-name" 
-                     placeholder="Cari nama..."
-                     aria-label="Input pencarian nama">
+      <button id="hamburger-menu-btn" class="hamburger-menu-btn" aria-label="Buka menu" aria-expanded="false" aria-controls="mobile-menu-panel">
+        <i class="fas fa-bars"></i>
+      </button>
+      <div id="mobile-menu-panel" class="mobile-menu-panel" aria-hidden="true">
+        <button id="close-mobile-menu-btn" class="close-mobile-menu-btn" aria-label="Tutup menu">&times;</button>
+        <div class="header-controls-wrapper">
+          <!-- Kontrol akan langsung di sini -->
+            <!-- Google Drive Icon Control -->
+            <div class="icon-control-wrapper" id="google-drive-control">
+              <select id="driveDropdown" class="select-as-button" aria-label="Pilih Kelas Drive">
+                  <option value="">-- Pilih Kelas Drive --</option>
+                  <option value="https://drive.google.com/drive/folders/12_mT3WcsuFeYOYfvuQnKjFH1B1dVgNyZ?usp=drive_link">
+                    PKU B
+                  </option>
+                  <option value="https://drive.google.com/drive/folders/1La24Y-0DOPq5iJUUVg-UaF8gWEIsIqHQ?usp=drive_link">
+                    PTIQ H
+                  </option>
+                  <option value="https://drive.google.com/drive/folders/1i83aR0pZj_lCFMaW6gSHAbXinvaQ3gFL?usp=drive_link">
+                    PKUP
+                  </option>
+              </select>
             </div>
-          </div>
-        <!-- Tombol Pilihan Tampilan -->
-          <button id="show-datacard-btn" class="view-toggle-btn active" aria-pressed="true">Daftar Jadwal</button>
-          <button id="show-calendar-btn" class="view-toggle-btn" aria-pressed="false">Kalender</button>
+
+            <!-- Class Selector -->
+            <div class="icon-control-wrapper" id="class-filter-control">
+              <label for="class-select" class="sr-only">Pilih Kelas</label>
+              <select id="class-select" class="select-as-button" aria-label="Pilih Kelas">
+                  <option value="all">Semua Kelas</option>
+                  <option value="PTIQ">Kelas PTIQ H</option>
+                  <option value="PKU B">Kelas PKU B</option>
+                  <option value="PKUP">Kelas PKUP</option>
+              </select>
+            </div>
+
+            <!-- Subject Selector Icon Control -->
+            <div class="icon-control-wrapper" id="subject-filter-control">
+              <label for="subject-select" class="sr-only">Pilih Mata Kuliah</label>
+              <select id="subject-select" class="select-as-button" aria-label="Pilih Mata Kuliah">
+                  <option value="">Semua Mata Kuliah</option>
+              </select>
+            </div>
+
+            <!-- Name Search Icon Control -->
+            <div class="icon-control-wrapper" id="name-search-control">
+              <button class="control-trigger-btn" aria-label="Cari Nama" aria-expanded="false" aria-controls="searchNameInputWrapper">
+                Cari
+              </button>
+              <div class="input-panel" id="searchNameInputWrapper">
+                <label for="search-name" class="sr-only">Cari Nama</label>
+                <input type="text" 
+                       id="search-name" 
+                       placeholder="Cari nama..."
+                       aria-label="Input pencarian nama">
+              </div>
+            </div>
+          <!-- Tombol Pilihan Tampilan -->
+            <button id="show-datacard-btn" class="view-toggle-btn active" aria-pressed="true">Daftar Jadwal</button>
+            <button id="show-calendar-btn" class="view-toggle-btn" aria-pressed="false">Kalender</button>
+        </div>
       </div>
     </div>
     

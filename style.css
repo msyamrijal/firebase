@@ -95,7 +95,7 @@ body {
   font-size: 1.4rem; /* Sesuaikan ukuran font judul */
   font-weight: 600;
   color: var(--primary);
-  margin-right: auto; /* Mendorong kontrol ke kanan/tengah */
+  /* margin-right: auto; Dihapus agar judul dan hamburger bisa berdampingan */
   white-space: nowrap;
 }
 
@@ -103,10 +103,55 @@ body {
   display: flex;
   align-items: center;
   justify-content: center; /* Memusatkan grup tombol */
-  flex-grow: 1; /* Mengambil sisa ruang agar bisa di tengah */
+  flex-grow: 1; /* Mengambil sisa ruang agar bisa di tengah (untuk desktop) */
   gap: 0.5rem; /* Jarak antar setiap tombol/kontrol wrapper */
   flex-wrap: wrap; /* Izinkan pembungkusan jika tidak cukup ruang */
 }
+
+/* Hamburger Menu Button (Visible on Mobile) */
+.hamburger-menu-btn {
+  display: none; /* Sembunyikan di desktop */
+  background: none;
+  border: none;
+  color: var(--primary);
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  margin-left: auto; /* Mendorong ke kanan */
+  z-index: 1001; /* Di atas panel menu saat tertutup */
+}
+
+/* Mobile Menu Panel */
+.mobile-menu-panel {
+  display: none; /* Sembunyikan di desktop */
+  position: fixed;
+  top: 0;
+  left: -300px; /* Mulai dari luar layar kiri */
+  width: 280px; /* Lebar panel menu */
+  height: 100%;
+  background-color: var(--card-bg);
+  box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+  padding: 2rem 1rem 1rem; /* Padding atas lebih besar untuk tombol close */
+  z-index: 1000; /* Di atas konten lain, di bawah popup utama */
+  transition: left 0.3s ease-in-out;
+  overflow-y: auto;
+}
+
+.mobile-menu-panel.active {
+  left: 0; /* Geser ke dalam layar */
+}
+
+.close-mobile-menu-btn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: none;
+  border: none;
+  font-size: 1.8rem;
+  color: var(--text-light);
+  cursor: pointer;
+}
+
 
 /* Interactive Icon Bar for Controls */
 /* .interactive-icon-bar sudah dihapus dari HTML sebagai wrapper utama, 
@@ -477,20 +522,49 @@ button:focus-visible {
   }
   
   #stack-header {
-    flex-direction: column; /* Susun judul di atas kontrol pada layar kecil */
-    align-items: flex-start; /* Ratakan judul ke kiri */
-    padding: 0.4rem 0.5rem; /* Sesuaikan padding untuk layar kecil */
+    flex-direction: row; /* Judul dan hamburger sejajar */
+    align-items: center; 
+    justify-content: space-between; /* Judul kiri, hamburger kanan */
+    padding: 0.4rem 0.75rem; 
+    position: relative; 
   }
 
   #header-app-title {
-    margin-right: 0; /* Hapus margin agar tidak mendorong kontrol */
-    margin-bottom: 0.5rem; /* Beri jarak ke kontrol di bawahnya */
+    margin-right: 0; 
+    margin-bottom: 0; 
+    text-align: left; 
   }
 
-  .interactive-icon-bar {
-    gap: 0.4rem; /* Sesuaikan gap untuk layar kecil */
-    justify-content: center;
+  .hamburger-menu-btn {
+    display: block; 
+    position: static; /* Tidak perlu absolute jika stack-header sudah flex space-between */
+    /* top: 0.2rem;  Dihapus */
+    /* right: 0.5rem; Dihapus */
   }
+
+  .mobile-menu-panel {
+    display: block; /* Panel menu sekarang dikontrol oleh JS */
+  }
+
+  /* Sembunyikan kontrol desktop di mobile */
+  #stack-header > .header-controls-wrapper {
+     display: none; /* Sembunyikan wrapper kontrol desktop */
+  }
+  
+  /* Gaya untuk kontrol di dalam panel mobile */
+  .mobile-menu-panel .header-controls-wrapper {
+    display: flex; 
+    flex-direction: column; 
+    align-items: stretch; 
+    gap: 0.75rem; 
+    width: 100%; 
+    padding-top: 1rem; 
+  }
+
+  /* .interactive-icon-bar {
+    gap: 0.4rem; 
+    justify-content: center;
+  } */
 
 }
 
@@ -499,13 +573,13 @@ button:focus-visible {
     font-size: 1.75rem;
   }
   
-  .header-controls-wrapper {
-    justify-content: center; /* Tetap pusatkan jika membungkus atau muat satu baris */
-  }
+  /* .header-controls-wrapper {
+    justify-content: center; 
+  } */
 
-  .interactive-icon-bar {
-    flex-wrap: wrap; /* Allow individual icons to wrap on very small screens */
-  }
+  /* .interactive-icon-bar {
+    flex-wrap: wrap; 
+  } */
 
   .popup {
     width: 95%;
